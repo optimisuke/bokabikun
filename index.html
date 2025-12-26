@@ -589,6 +589,24 @@
       if (!localStorage.getItem("bokabikun.updatedAt")) {
         localStorage.setItem("bokabikun.updatedAt", new Date().toISOString());
       }
+      if (!localStorage.getItem(STORAGE_KEY)) {
+        const today = nowISODate();
+        const sample = [
+          {
+            id: uid(),
+            name: "防カビくん",
+            intervalDays: 60,
+            lastDone: today,
+            note: "たまにはやろう",
+          },
+        ].map((t) => ({
+          ...t,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+
+        saveTasks(sample);
+      }
       render();
 
       // PWA service worker
