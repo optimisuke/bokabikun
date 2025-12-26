@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>bokabikun</title>
+    <title>Bokabikun</title>
 
     <!-- Tailwind (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,77 +22,28 @@
       >
         <div class="flex items-center gap-3">
           <div
-            class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-white shadow-sm"
+            class="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 text-white shadow-sm"
             aria-hidden="true"
           >
-            🧼
+            👻
           </div>
           <div>
-            <h1 class="text-lg font-semibold leading-tight">bokabikun</h1>
-            <p class="text-xs text-slate-500">ゆるく定期タスクを確認する</p>
+            <h1 class="text-lg font-semibold leading-tight">
+              タスク管理 Bokabi-kun
+            </h1>
+            <p class="text-xs text-slate-500">ゆるく管理するタスクアプリ</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button
-            id="btnAdd"
-            class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
-          >
-            ＋ 追加
-          </button>
-
-          <button
-            id="btnExport"
-            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
-            title="バックアップ（JSON）"
-          >
-            書き出し
-          </button>
-
-          <label
-            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
-            title="復元（JSON）"
-          >
-            読み込み
-            <input
-              id="fileImport"
-              type="file"
-              accept="application/json"
-              class="hidden"
-            />
-          </label>
-        </div>
+        <div class="flex items-center gap-2"></div>
       </div>
     </header>
 
-    <main class="mx-auto max-w-3xl px-4 py-6">
-      <!-- Hint panel -->
-      <section class="mb-4">
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="flex items-start justify-between gap-3">
-            <div>
-              <p class="text-sm text-slate-700">
-                通知はしない。気が向いたときに開いて「どんくらい経ったか」を見るだけ。
-              </p>
-              <p class="mt-1 text-xs text-slate-500">
-                データはこの端末のブラウザにだけ保存（localStorage）。再起動しても残る。
-              </p>
-            </div>
-            <button
-              id="btnSeed"
-              class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
-              title="サンプルを入れる"
-            >
-              サンプル
-            </button>
-          </div>
-        </div>
-      </section>
-
+    <main class="mx-auto max-w-3xl px-4 py-6 pb-24">
       <!-- List -->
       <section>
         <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-slate-700">タスク一覧</h2>
+          <h2 class="text-sm font-semibold text-slate-700">一覧</h2>
           <div class="flex items-center gap-2 text-xs text-slate-500">
             <span id="countText">0件</span>
             <span class="inline-block h-1 w-1 rounded-full bg-slate-300"></span>
@@ -104,21 +55,33 @@
           id="emptyState"
           class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
         >
-          <p class="text-sm font-medium text-slate-700">まだタスクがないよ</p>
-          <p class="mt-1 text-xs text-slate-500">
-            「追加」から、防カビくん / 浄水器フィルター / 洗濯槽… を登録しよう
-          </p>
-          <button
-            id="btnAdd2"
-            class="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
-          >
-            ＋ 追加
-          </button>
+          <p class="text-sm font-medium text-slate-700">タスクなし</p>
+          <p class="mt-1 text-xs text-slate-500">＋で追加</p>
         </div>
 
         <div id="list" class="grid gap-3"></div>
       </section>
     </main>
+    <button
+      id="btnAddFab"
+      class="fixed bottom-4 right-4 z-30 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+      aria-label="タスクを追加"
+    >
+      ＋ 追加
+    </button>
+
+    <div
+      id="toast"
+      class="fixed bottom-20 right-4 z-30 hidden max-w-xs items-center gap-3 rounded-2xl bg-white px-4 py-3 text-sm text-slate-800 shadow-lg ring-1 ring-slate-200 flex"
+    >
+      <span id="toastMessage" class="font-medium"></span>
+      <button
+        id="btnUndo"
+        class="ml-auto rounded-xl border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50"
+      >
+        取り消す
+      </button>
+    </div>
 
     <!-- Modal -->
     <div id="modalBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
@@ -217,7 +180,7 @@
                 </button>
                 <button
                   type="submit"
-                  class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
                 >
                   保存
                 </button>
@@ -227,7 +190,7 @@
         </div>
 
         <p class="mt-3 text-center text-xs text-white/80">
-          ヒント：カードの「やった！」で前回実施日を今日に更新できる
+          ヒント：「やった！」で更新
         </p>
       </div>
     </div>
@@ -290,12 +253,11 @@
       const elCountText = document.getElementById("countText");
       const elUpdatedText = document.getElementById("updatedText");
 
-      const btnAdd = document.getElementById("btnAdd");
-      const btnAdd2 = document.getElementById("btnAdd2");
-      const btnSeed = document.getElementById("btnSeed");
+      const btnAddFab = document.getElementById("btnAddFab");
 
-      const btnExport = document.getElementById("btnExport");
-      const fileImport = document.getElementById("fileImport");
+      const toast = document.getElementById("toast");
+      const toastMessage = document.getElementById("toastMessage");
+      const btnUndo = document.getElementById("btnUndo");
 
       const backdrop = document.getElementById("modalBackdrop");
       const btnCloseModal = document.getElementById("btnCloseModal");
@@ -312,6 +274,8 @@
 
       /** @type {Task[]} */
       let tasks = loadTasks();
+      let lastAction = null;
+      let toastTimer = null;
 
       function formatUpdatedAt() {
         const raw = localStorage.getItem("bokabikun.updatedAt");
@@ -327,26 +291,21 @@
       }
 
       function statusBadge(elapsed, interval) {
-        // ゆるい判定
         // - due: 経過 >= interval
         // - soon: 経過 >= 0.75*interval
-        // - ok: それ以外
         if (elapsed >= interval) {
           return {
-            label: "そろそろ（期限超え）",
+            label: "やっとく？",
             cls: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
           };
         }
         if (elapsed >= Math.floor(interval * 0.75)) {
           return {
-            label: "そろそろ",
+            label: "ぼちぼちやで",
             cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
           };
         }
-        return {
-          label: "まだ大丈夫",
-          cls: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-        };
+        return null;
       }
 
       function render() {
@@ -376,10 +335,16 @@
           const ratio = Math.round((elapsed / t.intervalDays) * 100);
 
           const badge = statusBadge(elapsed, t.intervalDays);
+          const badgeHtml = badge
+            ? `<span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${badge.cls}">
+                ${badge.label}
+              </span>`
+            : "";
 
           const card = document.createElement("div");
+          card.dataset.taskId = t.id;
           card.className =
-            "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow transition-shadow";
+            "cursor-pointer rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow transition-shadow";
 
           card.innerHTML = `
             <div class="flex items-start justify-between gap-3">
@@ -388,17 +353,12 @@
                   <h3 class="truncate text-base font-semibold text-slate-900">${escapeHtml(
                     t.name
                   )}</h3>
-                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                    badge.cls
-                  }">
-                    ${badge.label}
-                  </span>
+                  ${badgeHtml}
                 </div>
                 <p class="mt-1 text-xs text-slate-500">
                   前回: <span class="font-medium text-slate-700">${
                     t.lastDone
                   }</span>
-                  ・ 経過: <span class="font-medium text-slate-700">${elapsed}日</span>
                   ・ 周期: <span class="font-medium text-slate-700">${
                     t.intervalDays
                   }日</span>
@@ -408,7 +368,7 @@
                     ? `<p class="mt-2 line-clamp-2 text-sm text-slate-700">${escapeHtml(
                         t.note
                       )}</p>`
-                    : `<p class="mt-2 text-sm text-slate-400">メモなし</p>`
+                    : ""
                 }
               </div>
 
@@ -416,18 +376,10 @@
                 <button
                   data-action="done"
                   data-id="${t.id}"
-                  class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
+                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
                   title="前回実施日を今日に更新"
                 >
                   やった！
-                </button>
-
-                <button
-                  data-action="edit"
-                  data-id="${t.id}"
-                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
-                >
-                  編集
                 </button>
               </div>
             </div>
@@ -436,13 +388,13 @@
               <div class="flex items-center justify-between text-[11px] text-slate-500">
                 <span>${
                   remain >= 0
-                    ? `次まであと ${remain}日（目安）`
+                    ? `あと ${remain}日`
                     : `超過 ${Math.abs(remain)}日（気にしない）`
                 }</span>
                 <span>${clamp(ratio, 0, 999)}%</span>
               </div>
               <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
-                <div class="h-full rounded-full bg-slate-900" style="width:${clamp(
+                <div class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-sky-400" style="width:${clamp(
                   ratio,
                   0,
                   100
@@ -495,6 +447,20 @@
         document.body.classList.remove("overflow-hidden");
       }
 
+      function showToast(message, canUndo) {
+        toastMessage.textContent = message;
+        if (canUndo) {
+          btnUndo.classList.remove("hidden");
+        } else {
+          btnUndo.classList.add("hidden");
+        }
+        toast.classList.remove("hidden");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.add("hidden");
+        }, 5000);
+      }
+
       function upsertTask(task) {
         const all = loadTasks();
         const idx = all.findIndex((t) => t.id === task.id);
@@ -516,11 +482,28 @@
       }
 
       // ===== Events =====
-      btnAdd.addEventListener("click", () => openModal("create"));
-      btnAdd2?.addEventListener("click", () => openModal("create"));
+      btnAddFab.addEventListener("click", () => openModal("create"));
 
       btnCloseModal.addEventListener("click", closeModal);
       btnCancel.addEventListener("click", closeModal);
+      document.addEventListener("click", (e) => {
+        if (toast.classList.contains("hidden")) return;
+        if (e.target.closest('[data-action="done"]')) return;
+        if (toast.contains(e.target)) return;
+        toast.classList.add("hidden");
+        if (toastTimer) clearTimeout(toastTimer);
+      });
+      btnUndo.addEventListener("click", () => {
+        if (!lastAction) return;
+        const t = findTask(lastAction.id);
+        if (!t) return;
+        t.lastDone = lastAction.lastDone;
+        t.updatedAt = lastAction.updatedAt;
+        upsertTask(t);
+        lastAction = null;
+        toast.classList.add("hidden");
+        render();
+      });
 
       backdrop.addEventListener("click", (e) => {
         if (e.target === backdrop) closeModal();
@@ -576,121 +559,30 @@
 
       elList.addEventListener("click", (e) => {
         const btn = e.target.closest("button");
-        if (!btn) return;
-        const action = btn.getAttribute("data-action");
-        const id = btn.getAttribute("data-id");
-        if (!action || !id) return;
+        const action = btn?.getAttribute("data-action");
+        const id = btn?.getAttribute("data-id");
 
-        if (action === "edit") {
-          const t = findTask(id);
-          if (t) openModal("edit", t);
-          return;
-        }
-
-        if (action === "done") {
+        if (action === "done" && id) {
           const t = findTask(id);
           if (!t) return;
+          lastAction = {
+            id: t.id,
+            lastDone: t.lastDone,
+            updatedAt: t.updatedAt,
+          };
           t.lastDone = nowISODate();
           t.updatedAt = new Date().toISOString();
           upsertTask(t);
           render();
+          showToast("🎉 更新したよ", true);
           return;
         }
-      });
 
-      // Export/Import
-      btnExport.addEventListener("click", () => {
-        const data = {
-          version: 1,
-          exportedAt: new Date().toISOString(),
-          tasks: loadTasks(),
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], {
-          type: "application/json",
-        });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `bokabikun-backup-${nowISODate()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-      });
-
-      fileImport.addEventListener("change", async (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        try {
-          const text = await file.text();
-          const json = JSON.parse(text);
-          if (!json || !Array.isArray(json.tasks))
-            throw new Error("Invalid backup");
-          // 最低限の形だけチェック
-          const sanitized = json.tasks
-            .filter(
-              (t) => t && typeof t.id === "string" && typeof t.name === "string"
-            )
-            .map((t) => ({
-              id: String(t.id),
-              name: String(t.name).slice(0, 40),
-              intervalDays: clamp(Number(t.intervalDays || 45), 1, 999),
-              lastDone: String(t.lastDone || nowISODate()),
-              note: String(t.note || "").slice(0, 160),
-              createdAt: String(t.createdAt || new Date().toISOString()),
-              updatedAt: String(t.updatedAt || new Date().toISOString()),
-            }));
-
-          saveTasks(sanitized);
-          render();
-          alert("読み込み完了！");
-        } catch {
-          alert("読み込みに失敗しました（JSON形式を確認してね）");
-        } finally {
-          e.target.value = "";
-        }
-      });
-
-      // Seed sample
-      btnSeed.addEventListener("click", () => {
-        if (loadTasks().length > 0) {
-          if (!confirm("既にタスクがあります。サンプルを追加しますか？"))
-            return;
-        }
-        const today = nowISODate();
-        const sample = [
-          {
-            id: uid(),
-            name: "防カビくん（煙剤）",
-            intervalDays: 60,
-            lastDone: today,
-            note: "実施後は換気。入浴前に。",
-          },
-          {
-            id: uid(),
-            name: "浄水器フィルター",
-            intervalDays: 90,
-            lastDone: today,
-            note: "型番メモしておくと便利。",
-          },
-          {
-            id: uid(),
-            name: "洗濯槽カビキラー",
-            intervalDays: 45,
-            lastDone: today,
-            note: "",
-          },
-        ].map((t) => ({
-          ...t,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }));
-
-        const all = loadTasks();
-        saveTasks([...all, ...sample]);
-        render();
+        const card = e.target.closest("[data-task-id]");
+        const cardId = card?.getAttribute("data-task-id");
+        if (!cardId) return;
+        const t = findTask(cardId);
+        if (t) openModal("edit", t);
       });
 
       // Initial render

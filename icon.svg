@@ -1,10 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="bokabikun">
   <rect width="512" height="512" rx="96" fill="#0f172a"/>
-  <circle cx="256" cy="220" r="120" fill="#e2e8f0"/>
-  <circle cx="220" cy="205" r="18" fill="#0f172a"/>
-  <circle cx="292" cy="205" r="18" fill="#0f172a"/>
-  <path d="M188 260c22 28 46 42 68 42s46-14 68-42" fill="none" stroke="#0f172a" stroke-width="18" stroke-linecap="round"/>
-  <rect x="132" y="310" width="248" height="92" rx="46" fill="#38bdf8"/>
-  <rect x="164" y="332" width="184" height="16" rx="8" fill="#0f172a" opacity="0.7"/>
-  <rect x="164" y="356" width="160" height="16" rx="8" fill="#0f172a" opacity="0.7"/>
+  <path d="M256 120c-77 0-140 63-140 140v112c0 22 18 40 40 40 16 0 30-9 36-22 6 13 20 22 36 22 17 0 31-9 37-22 6 13 20 22 36 22 16 0 30-9 36-22 6 13 20 22 36 22 22 0 40-18 40-40V260c0-77-63-140-140-140z" fill="#e2e8f0"/>
+  <circle cx="214" cy="220" r="18" fill="#0f172a"/>
+  <circle cx="298" cy="220" r="18" fill="#0f172a"/>
+  <path d="M210 270c24 18 68 18 92 0" fill="none" stroke="#0f172a" stroke-width="14" stroke-linecap="round"/>
 </svg>
