@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>bokabikun</title>
+
+    <!-- Tailwind (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#0f172a" />
+    <meta name="color-scheme" content="light dark" />
+  </head>
+
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <header
+      class="sticky top-0 z-10 border-b border-slate-200 bg-white/80 backdrop-blur"
+    >
+      <div
+        class="mx-auto flex max-w-3xl items-center justify-between gap-3 px-4 py-3"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="grid h-10 w-10 place-items-center rounded-xl bg-slate-900 text-white shadow-sm"
+            aria-hidden="true"
+          >
+            🧼
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold leading-tight">bokabikun</h1>
+            <p class="text-xs text-slate-500">ゆるく定期タスクを確認する</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button
+            id="btnAdd"
+            class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
+          >
+            ＋ 追加
+          </button>
+
+          <button
+            id="btnExport"
+            class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
+            title="バックアップ（JSON）"
+          >
+            書き出し
+          </button>
+
+          <label
+            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
+            title="復元（JSON）"
+          >
+            読み込み
+            <input
+              id="fileImport"
+              type="file"
+              accept="application/json"
+              class="hidden"
+            />
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto max-w-3xl px-4 py-6">
+      <!-- Hint panel -->
+      <section class="mb-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm text-slate-700">
+                通知はしない。気が向いたときに開いて「どんくらい経ったか」を見るだけ。
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                データはこの端末のブラウザにだけ保存（localStorage）。再起動しても残る。
+              </p>
+            </div>
+            <button
+              id="btnSeed"
+              class="shrink-0 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-600 hover:bg-slate-50"
+              title="サンプルを入れる"
+            >
+              サンプル
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- List -->
+      <section>
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-slate-700">タスク一覧</h2>
+          <div class="flex items-center gap-2 text-xs text-slate-500">
+            <span id="countText">0件</span>
+            <span class="inline-block h-1 w-1 rounded-full bg-slate-300"></span>
+            <span id="updatedText">—</span>
+          </div>
+        </div>
+
+        <div
+          id="emptyState"
+          class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
+        >
+          <p class="text-sm font-medium text-slate-700">まだタスクがないよ</p>
+          <p class="mt-1 text-xs text-slate-500">
+            「追加」から、防カビくん / 浄水器フィルター / 洗濯槽… を登録しよう
+          </p>
+          <button
+            id="btnAdd2"
+            class="mt-4 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+          >
+            ＋ 追加
+          </button>
+        </div>
+
+        <div id="list" class="grid gap-3"></div>
+      </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="modalBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
+      <div class="mx-auto mt-10 max-w-md">
+        <div class="rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+          <div
+            class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
+          >
+            <h3 id="modalTitle" class="text-sm font-semibold text-slate-800">
+              タスク
+            </h3>
+            <button
+              id="btnCloseModal"
+              class="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form id="taskForm" class="space-y-4 p-4">
+            <input type="hidden" id="taskId" />
+
+            <div>
+              <label class="text-xs font-medium text-slate-600">名前</label>
+              <input
+                id="taskName"
+                type="text"
+                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                placeholder="例）防カビくん / 浄水器フィルター"
+                required
+                maxlength="40"
+              />
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs font-medium text-slate-600"
+                  >周期（日）</label
+                >
+                <input
+                  id="taskInterval"
+                  type="number"
+                  min="1"
+                  max="999"
+                  class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  placeholder="例）45"
+                  required
+                />
+              </div>
+
+              <div>
+                <label class="text-xs font-medium text-slate-600"
+                  >前回実施日</label
+                >
+                <input
+                  id="taskLastDone"
+                  type="date"
+                  class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-600"
+                >メモ（任意）</label
+              >
+              <textarea
+                id="taskNote"
+                rows="2"
+                class="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                placeholder="例）換気扇を回してから。"
+                maxlength="160"
+              ></textarea>
+              <p class="mt-1 text-[11px] text-slate-400">
+                ※ この端末内にだけ保存されます
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <button
+                id="btnDelete"
+                type="button"
+                class="hidden rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                削除
+              </button>
+
+              <div class="ml-auto flex items-center gap-2">
+                <button
+                  id="btnCancel"
+                  type="button"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  class="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <p class="mt-3 text-center text-xs text-white/80">
+          ヒント：カードの「やった！」で前回実施日を今日に更新できる
+        </p>
+      </div>
+    </div>
+
+    <script>
+      // ===== Storage =====
+      const STORAGE_KEY = "bokabikun.tasks.v1";
+
+      /** @typedef {{id:string,name:string,intervalDays:number,lastDone:string,note?:string,createdAt:string,updatedAt:string}} Task */
+
+      /** @returns {Task[]} */
+      function loadTasks() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        try {
+          const data = JSON.parse(raw);
+          if (!Array.isArray(data)) return [];
+          return data;
+        } catch {
+          return [];
+        }
+      }
+
+      /** @param {Task[]} tasks */
+      function saveTasks(tasks) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        localStorage.setItem("bokabikun.updatedAt", new Date().toISOString());
+      }
+
+      function nowISODate() {
+        // local date -> YYYY-MM-DD
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+      }
+
+      function daysBetween(fromISO, toISO) {
+        const from = new Date(fromISO + "T00:00:00");
+        const to = new Date(toISO + "T00:00:00");
+        const ms = to - from;
+        return Math.floor(ms / (1000 * 60 * 60 * 24));
+      }
+
+      function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+      }
+
+      function uid() {
+        // good enough for local
+        return (
+          Math.random().toString(16).slice(2) + "-" + Date.now().toString(16)
+        );
+      }
+
+      // ===== UI =====
+      const elList = document.getElementById("list");
+      const elEmpty = document.getElementById("emptyState");
+      const elCountText = document.getElementById("countText");
+      const elUpdatedText = document.getElementById("updatedText");
+
+      const btnAdd = document.getElementById("btnAdd");
+      const btnAdd2 = document.getElementById("btnAdd2");
+      const btnSeed = document.getElementById("btnSeed");
+
+      const btnExport = document.getElementById("btnExport");
+      const fileImport = document.getElementById("fileImport");
+
+      const backdrop = document.getElementById("modalBackdrop");
+      const btnCloseModal = document.getElementById("btnCloseModal");
+      const btnCancel = document.getElementById("btnCancel");
+      const btnDelete = document.getElementById("btnDelete");
+      const modalTitle = document.getElementById("modalTitle");
+
+      const form = document.getElementById("taskForm");
+      const inputId = document.getElementById("taskId");
+      const inputName = document.getElementById("taskName");
+      const inputInterval = document.getElementById("taskInterval");
+      const inputLastDone = document.getElementById("taskLastDone");
+      const inputNote = document.getElementById("taskNote");
+
+      /** @type {Task[]} */
+      let tasks = loadTasks();
+
+      function formatUpdatedAt() {
+        const raw = localStorage.getItem("bokabikun.updatedAt");
+        if (!raw) return "更新: —";
+        const d = new Date(raw);
+        if (Number.isNaN(d.getTime())) return "更新: —";
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        return `更新: ${y}-${m}-${day} ${hh}:${mm}`;
+      }
+
+      function statusBadge(elapsed, interval) {
+        // ゆるい判定
+        // - due: 経過 >= interval
+        // - soon: 経過 >= 0.75*interval
+        // - ok: それ以外
+        if (elapsed >= interval) {
+          return {
+            label: "そろそろ（期限超え）",
+            cls: "bg-rose-50 text-rose-700 ring-1 ring-rose-200",
+          };
+        }
+        if (elapsed >= Math.floor(interval * 0.75)) {
+          return {
+            label: "そろそろ",
+            cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+          };
+        }
+        return {
+          label: "まだ大丈夫",
+          cls: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+        };
+      }
+
+      function render() {
+        tasks = loadTasks();
+
+        // sort: most urgent first
+        const today = nowISODate();
+        const sorted = [...tasks].sort((a, b) => {
+          const ea = daysBetween(a.lastDone, today) / a.intervalDays;
+          const eb = daysBetween(b.lastDone, today) / b.intervalDays;
+          return eb - ea;
+        });
+
+        elList.innerHTML = "";
+        elCountText.textContent = `${sorted.length}件`;
+        elUpdatedText.textContent = formatUpdatedAt();
+
+        if (sorted.length === 0) {
+          elEmpty.classList.remove("hidden");
+        } else {
+          elEmpty.classList.add("hidden");
+        }
+
+        for (const t of sorted) {
+          const elapsed = clamp(daysBetween(t.lastDone, today), 0, 99999);
+          const remain = t.intervalDays - elapsed;
+          const ratio = Math.round((elapsed / t.intervalDays) * 100);
+
+          const badge = statusBadge(elapsed, t.intervalDays);
+
+          const card = document.createElement("div");
+          card.className =
+            "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow transition-shadow";
+
+          card.innerHTML = `
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="truncate text-base font-semibold text-slate-900">${escapeHtml(
+                    t.name
+                  )}</h3>
+                  <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                    badge.cls
+                  }">
+                    ${badge.label}
+                  </span>
+                </div>
+                <p class="mt-1 text-xs text-slate-500">
+                  前回: <span class="font-medium text-slate-700">${
+                    t.lastDone
+                  }</span>
+                  ・ 経過: <span class="font-medium text-slate-700">${elapsed}日</span>
+                  ・ 周期: <span class="font-medium text-slate-700">${
+                    t.intervalDays
+                  }日</span>
+                </p>
+                ${
+                  t.note
+                    ? `<p class="mt-2 line-clamp-2 text-sm text-slate-700">${escapeHtml(
+                        t.note
+                      )}</p>`
+                    : `<p class="mt-2 text-sm text-slate-400">メモなし</p>`
+                }
+              </div>
+
+              <div class="flex shrink-0 flex-col items-end gap-2">
+                <button
+                  data-action="done"
+                  data-id="${t.id}"
+                  class="rounded-xl bg-slate-900 px-3 py-2 text-sm font-medium text-white shadow-sm hover:bg-slate-800 active:bg-slate-950"
+                  title="前回実施日を今日に更新"
+                >
+                  やった！
+                </button>
+
+                <button
+                  data-action="edit"
+                  data-id="${t.id}"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 active:bg-slate-100"
+                >
+                  編集
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-3">
+              <div class="flex items-center justify-between text-[11px] text-slate-500">
+                <span>${
+                  remain >= 0
+                    ? `次まであと ${remain}日（目安）`
+                    : `超過 ${Math.abs(remain)}日（気にしない）`
+                }</span>
+                <span>${clamp(ratio, 0, 999)}%</span>
+              </div>
+              <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div class="h-full rounded-full bg-slate-900" style="width:${clamp(
+                  ratio,
+                  0,
+                  100
+                )}%"></div>
+              </div>
+            </div>
+          `;
+
+          elList.appendChild(card);
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function openModal(mode, task) {
+        backdrop.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+
+        if (mode === "create") {
+          modalTitle.textContent = "タスク追加";
+          btnDelete.classList.add("hidden");
+          inputId.value = "";
+          inputName.value = "";
+          inputInterval.value = "45";
+          inputLastDone.value = nowISODate();
+          inputNote.value = "";
+          inputName.focus();
+          return;
+        }
+
+        modalTitle.textContent = "タスク編集";
+        btnDelete.classList.remove("hidden");
+        inputId.value = task.id;
+        inputName.value = task.name;
+        inputInterval.value = String(task.intervalDays);
+        inputLastDone.value = task.lastDone;
+        inputNote.value = task.note || "";
+        inputName.focus();
+      }
+
+      function closeModal() {
+        backdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      function upsertTask(task) {
+        const all = loadTasks();
+        const idx = all.findIndex((t) => t.id === task.id);
+        if (idx >= 0) {
+          all[idx] = task;
+        } else {
+          all.push(task);
+        }
+        saveTasks(all);
+      }
+
+      function deleteTask(id) {
+        const all = loadTasks().filter((t) => t.id !== id);
+        saveTasks(all);
+      }
+
+      function findTask(id) {
+        return loadTasks().find((t) => t.id === id);
+      }
+
+      // ===== Events =====
+      btnAdd.addEventListener("click", () => openModal("create"));
+      btnAdd2?.addEventListener("click", () => openModal("create"));
+
+      btnCloseModal.addEventListener("click", closeModal);
+      btnCancel.addEventListener("click", closeModal);
+
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop) closeModal();
+      });
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && !backdrop.classList.contains("hidden"))
+          closeModal();
+      });
+
+      btnDelete.addEventListener("click", () => {
+        const id = inputId.value;
+        if (!id) return;
+        // ゆるいアプリなので confirm だけ
+        if (confirm("このタスクを削除しますか？")) {
+          deleteTask(id);
+          closeModal();
+          render();
+        }
+      });
+
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const id = inputId.value || uid();
+        const name = inputName.value.trim();
+        const intervalDays = Number(inputInterval.value);
+        const lastDone = inputLastDone.value;
+        const note = inputNote.value.trim();
+
+        if (!name) return;
+        if (!Number.isFinite(intervalDays) || intervalDays < 1) return;
+        if (!lastDone) return;
+
+        const existing = findTask(id);
+        const createdAt = existing?.createdAt || new Date().toISOString();
+
+        /** @type {Task} */
+        const task = {
+          id,
+          name,
+          intervalDays,
+          lastDone,
+          note: note || "",
+          createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+
+        upsertTask(task);
+        closeModal();
+        render();
+      });
+
+      elList.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        if (!btn) return;
+        const action = btn.getAttribute("data-action");
+        const id = btn.getAttribute("data-id");
+        if (!action || !id) return;
+
+        if (action === "edit") {
+          const t = findTask(id);
+          if (t) openModal("edit", t);
+          return;
+        }
+
+        if (action === "done") {
+          const t = findTask(id);
+          if (!t) return;
+          t.lastDone = nowISODate();
+          t.updatedAt = new Date().toISOString();
+          upsertTask(t);
+          render();
+          return;
+        }
+      });
+
+      // Export/Import
+      btnExport.addEventListener("click", () => {
+        const data = {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          tasks: loadTasks(),
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `bokabikun-backup-${nowISODate()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      });
+
+      fileImport.addEventListener("change", async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+          const text = await file.text();
+          const json = JSON.parse(text);
+          if (!json || !Array.isArray(json.tasks))
+            throw new Error("Invalid backup");
+          // 最低限の形だけチェック
+          const sanitized = json.tasks
+            .filter(
+              (t) => t && typeof t.id === "string" && typeof t.name === "string"
+            )
+            .map((t) => ({
+              id: String(t.id),
+              name: String(t.name).slice(0, 40),
+              intervalDays: clamp(Number(t.intervalDays || 45), 1, 999),
+              lastDone: String(t.lastDone || nowISODate()),
+              note: String(t.note || "").slice(0, 160),
+              createdAt: String(t.createdAt || new Date().toISOString()),
+              updatedAt: String(t.updatedAt || new Date().toISOString()),
+            }));
+
+          saveTasks(sanitized);
+          render();
+          alert("読み込み完了！");
+        } catch {
+          alert("読み込みに失敗しました（JSON形式を確認してね）");
+        } finally {
+          e.target.value = "";
+        }
+      });
+
+      // Seed sample
+      btnSeed.addEventListener("click", () => {
+        if (loadTasks().length > 0) {
+          if (!confirm("既にタスクがあります。サンプルを追加しますか？"))
+            return;
+        }
+        const today = nowISODate();
+        const sample = [
+          {
+            id: uid(),
+            name: "防カビくん（煙剤）",
+            intervalDays: 60,
+            lastDone: today,
+            note: "実施後は換気。入浴前に。",
+          },
+          {
+            id: uid(),
+            name: "浄水器フィルター",
+            intervalDays: 90,
+            lastDone: today,
+            note: "型番メモしておくと便利。",
+          },
+          {
+            id: uid(),
+            name: "洗濯槽カビキラー",
+            intervalDays: 45,
+            lastDone: today,
+            note: "",
+          },
+        ].map((t) => ({
+          ...t,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }));
+
+        const all = loadTasks();
+        saveTasks([...all, ...sample]);
+        render();
+      });
+
+      // Initial render
+      if (!localStorage.getItem("bokabikun.updatedAt")) {
+        localStorage.setItem("bokabikun.updatedAt", new Date().toISOString());
+      }
+      render();
+
+      // PWA service worker
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("./sw.js").catch(() => {
+            // ignore registration errors for local file or unsupported environments
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

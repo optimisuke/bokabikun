@@ -1,0 +1,18 @@
+{
+  "name": "bokabikun",
+  "short_name": "bokabikun",
+  "description": "ゆるく定期タスクを確認する",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
