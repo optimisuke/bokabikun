@@ -1,4 +1,4 @@
-const CACHE_NAME = "bokabikun-v1";
+const CACHE_NAME = "bokabikun-v2";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
@@ -20,7 +20,9 @@ self.addEventListener("activate", (event) => {
     caches
       .keys()
       .then((keys) =>
-        Promise.all(keys.map((key) => (key === CACHE_NAME ? null : caches.delete(key))))
+        Promise.all(
+          keys.map((key) => (key === CACHE_NAME ? null : caches.delete(key)))
+        )
       )
       .then(() => self.clients.claim())
   );
