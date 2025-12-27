@@ -2,6 +2,8 @@
 
 防カビくんの定期実行をゆるく管理するアプリ
 
+![bokabikun](bokabikun.gif)
+
 # 開発メモ
 
 ## 目的
@@ -29,6 +31,11 @@
 ## GitHub Pages
 
 GitHub Pages でそのまま公開できる構成（静的ファイルのみ）。
+
+## sw.js
+
+初回に主要ファイルを事前キャッシュし、更新時は旧キャッシュを削除。  
+同一オリジンはキャッシュ優先、Tailwind CDN は stale-while-revalidate（SWR）。
 
 ## やらないこと
 
