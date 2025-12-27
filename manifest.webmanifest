@@ -1,6 +1,6 @@
 {
-  "name": "bokabikun",
-  "short_name": "bokabikun",
+  "name": "Bokabi-kun",
+  "short_name": "Bokabi-kun",
   "description": "ゆるく定期タスクを確認する",
   "start_url": "./index.html",
   "scope": "./",
