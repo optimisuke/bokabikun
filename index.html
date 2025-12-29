@@ -300,7 +300,7 @@
         }
         if (elapsed >= Math.floor(interval * 0.75)) {
           return {
-            label: "ぼちぼちやで",
+            label: "そろそろやで",
             cls: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
           };
         }
@@ -310,12 +310,12 @@
       function render() {
         tasks = loadTasks();
 
-        // sort: most urgent first
+        // sort: smaller remaining days first; overdue with longer overdue first
         const today = nowISODate();
         const sorted = [...tasks].sort((a, b) => {
-          const ea = daysBetween(a.lastDone, today) / a.intervalDays;
-          const eb = daysBetween(b.lastDone, today) / b.intervalDays;
-          return eb - ea;
+          const ra = a.intervalDays - daysBetween(a.lastDone, today);
+          const rb = b.intervalDays - daysBetween(b.lastDone, today);
+          return ra - rb;
         });
 
         elList.innerHTML = "";
@@ -388,7 +388,7 @@
                 <span>${
                   remain >= 0
                     ? `あと ${remain}日`
-                    : `超過 ${Math.abs(remain)}日（気にしない）`
+                    : `超過 ${Math.abs(remain)}日`
                 }</span>
                 <span>${clamp(ratio, 0, 999)}%</span>
               </div>
