@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="bokabikun">
+  <path d="M256 120c-77 0-140 63-140 140v112c0 22 18 40 40 40 16 0 30-9 36-22 6 13 20 22 36 22 17 0 31-9 37-22 6 13 20 22 36 22 16 0 30-9 36-22 6 13 20 22 36 22 22 0 40-18 40-40V260c0-77-63-140-140-140z" fill="#e2e8f0"/>
+  <circle cx="214" cy="220" r="18" fill="#334155"/>
+  <circle cx="298" cy="220" r="18" fill="#334155"/>
+  <path d="M210 270c24 18 68 18 92 0" fill="none" stroke="#334155" stroke-width="14" stroke-linecap="round"/>
+</svg>

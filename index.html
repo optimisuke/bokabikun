@@ -11,6 +11,52 @@
     <link rel="manifest" href="manifest.webmanifest" />
     <meta name="theme-color" content="#0f172a" />
     <meta name="color-scheme" content="light dark" />
+    <style>
+      .icon-press {
+        transition: transform 120ms ease, opacity 120ms ease;
+      }
+      .icon-press:active {
+        animation: icon-bounce 180ms ease;
+        opacity: 0.75;
+      }
+      .icon-swap {
+        position: relative;
+        display: inline-block;
+        width: 24px;
+        height: 24px;
+      }
+      .icon-swap img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: opacity 400ms ease;
+      }
+      .icon-swap .icon-active {
+        opacity: 0;
+      }
+      .icon-swap.flash .icon-active {
+        opacity: 1;
+      }
+      .icon-swap.flash .icon-base {
+        opacity: 0;
+      }
+      @keyframes icon-bounce {
+        0% {
+          transform: scale(1);
+        }
+        40% {
+          transform: scale(0.86);
+        }
+        70% {
+          transform: scale(1.08);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+    </style>
   </head>
 
   <body class="min-h-screen bg-slate-50 text-slate-900">
@@ -39,27 +85,83 @@
     </header>
 
     <main class="mx-auto max-w-3xl px-4 py-6 pb-24">
-      <!-- List -->
-      <section>
-        <div class="mb-3 flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-slate-700">一覧</h2>
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <span id="countText">0件</span>
-            <span class="inline-block h-1 w-1 rounded-full bg-slate-300"></span>
-            <span id="updatedText">—</span>
-          </div>
-        </div>
-
+      <div class="mb-4 flex items-center justify-center">
         <div
-          id="emptyState"
-          class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
+          class="inline-flex rounded-full bg-slate-100 p-1 text-xs font-medium"
         >
-          <p class="text-sm font-medium text-slate-700">タスクなし</p>
-          <p class="mt-1 text-xs text-slate-500">＋で追加</p>
+          <button
+            type="button"
+            data-tab="tasks"
+            class="tab-btn rounded-full px-4 py-2 text-slate-700"
+            aria-selected="true"
+          >
+            タスク
+          </button>
+          <button
+            type="button"
+            data-tab="themes"
+            class="tab-btn rounded-full px-4 py-2 text-slate-700"
+            aria-selected="false"
+          >
+            プロジェクト
+          </button>
         </div>
+      </div>
 
-        <div id="list" class="grid gap-3"></div>
-      </section>
+      <div id="tabViewport">
+        <!-- Tasks Panel -->
+        <section id="tasksPanel">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-700">一覧</h2>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span id="countText">0件</span>
+              <span
+                class="inline-block h-1 w-1 rounded-full bg-slate-300"
+              ></span>
+              <span id="updatedText">—</span>
+            </div>
+          </div>
+
+          <div
+            id="emptyState"
+            class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
+          >
+            <p class="text-sm font-medium text-slate-700">タスクなし</p>
+            <p class="mt-1 text-xs text-slate-500">＋で追加</p>
+          </div>
+
+          <div id="list" class="grid gap-3"></div>
+        </section>
+
+        <!-- Themes Panel -->
+        <section id="themesPanel" class="hidden">
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-slate-700">プロジェクト</h2>
+            <div class="flex items-center gap-2 text-xs text-slate-500">
+              <span id="themeCountText">0件</span>
+            </div>
+          </div>
+
+          <div
+            id="themeEmptyState"
+            class="hidden rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center"
+          >
+            <p class="text-sm font-medium text-slate-700">プロジェクトなし</p>
+            <p class="mt-1 text-xs text-slate-500">＋で追加</p>
+          </div>
+
+          <div id="themeList" class="grid gap-4"></div>
+          <div class="mt-5">
+            <button
+              id="btnAddThemeInline"
+              class="w-full rounded-2xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+              aria-label="プロジェクトを追加"
+            >
+              ＋ プロジェクトを追加
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
     <button
       id="btnAddFab"
@@ -82,7 +184,7 @@
       </button>
     </div>
 
-    <!-- Modal -->
+    <!-- Task Modal -->
     <div id="modalBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
       <div class="mx-auto mt-10 max-w-md">
         <div class="rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
@@ -194,11 +296,161 @@
       </div>
     </div>
 
+    <!-- Theme Modal -->
+    <div id="themeBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
+      <div class="mx-auto mt-10 max-w-md">
+        <div class="rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+          <div
+            class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
+          >
+            <h3
+              id="themeModalTitle"
+              class="text-sm font-semibold text-slate-800"
+            >
+              プロジェクト
+            </h3>
+            <button
+              id="btnCloseThemeModal"
+              class="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form id="themeForm" class="space-y-4 p-4">
+            <input type="hidden" id="themeId" />
+
+            <div>
+              <label class="text-xs font-medium text-slate-600"
+                >プロジェクト名</label
+              >
+              <input
+                id="themeTitle"
+                type="text"
+                class="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                placeholder="例）健康 / 事業 / 学習"
+                required
+                maxlength="40"
+              />
+            </div>
+
+            <div>
+              <label class="text-xs font-medium text-slate-600"
+                >Objective（目標）</label
+              >
+              <textarea
+                id="themeObjective"
+                rows="3"
+                class="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                placeholder="例）毎週3回運動して体力を上げる"
+                maxlength="240"
+                required
+              ></textarea>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <button
+                id="btnDeleteTheme"
+                type="button"
+                class="hidden rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+              >
+                削除
+              </button>
+
+              <div class="ml-auto flex items-center gap-2">
+                <button
+                  id="btnCancelTheme"
+                  type="button"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Milestone Modal -->
+    <div id="midBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
+      <div class="mx-auto mt-10 max-w-md">
+        <div class="rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+          <div
+            class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
+          >
+            <h3 id="midModalTitle" class="text-sm font-semibold text-slate-800">
+              マイルストーン編集
+            </h3>
+            <button
+              id="btnCloseMidModal"
+              class="rounded-xl px-3 py-2 text-sm text-slate-500 hover:bg-slate-100"
+            >
+              ✕
+            </button>
+          </div>
+
+          <form id="midForm" class="space-y-4 p-4">
+            <input type="hidden" id="midThemeId" />
+            <input type="hidden" id="midId" />
+
+            <div>
+              <label class="text-xs font-medium text-slate-600"
+                >マイルストーン</label
+              >
+              <textarea
+                id="midText"
+                rows="3"
+                class="mt-1 w-full resize-none rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                maxlength="160"
+                required
+              ></textarea>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-1">
+              <button
+                id="btnArchiveMid"
+                type="button"
+                class="rounded-xl border border-amber-200 bg-white px-3 py-2 text-sm font-medium text-amber-700 hover:bg-amber-50"
+              >
+                アーカイブ
+              </button>
+
+              <div class="ml-auto flex items-center gap-2">
+                <button
+                  id="btnCancelMid"
+                  type="button"
+                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                >
+                  キャンセル
+                </button>
+                <button
+                  type="submit"
+                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+                >
+                  保存
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
     <script>
       // ===== Storage =====
       const STORAGE_KEY = "bokabikun.tasks.v1";
+      const THEMES_KEY = "bokabikun.themes.v1";
 
       /** @typedef {{id:string,name:string,intervalDays:number,lastDone:string,note?:string,createdAt:string,updatedAt:string}} Task */
+      /** @typedef {{id:string,text:string,progressByMonth:Record<string,number>,createdAt:string,archivedAt?:string}} MidTodo */
+      /** @typedef {{id:string,title:string,objective:string,midTodos:MidTodo[],createdAt:string,updatedAt:string}} Theme */
 
       /** @returns {Task[]} */
       function loadTasks() {
@@ -213,10 +465,28 @@
         }
       }
 
+      /** @returns {Theme[]} */
+      function loadThemes() {
+        const raw = localStorage.getItem(THEMES_KEY);
+        if (!raw) return [];
+        try {
+          const data = JSON.parse(raw);
+          if (!Array.isArray(data)) return [];
+          return data;
+        } catch {
+          return [];
+        }
+      }
+
       /** @param {Task[]} tasks */
       function saveTasks(tasks) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
         localStorage.setItem("bokabikun.updatedAt", new Date().toISOString());
+      }
+
+      /** @param {Theme[]} themes */
+      function saveThemes(themes) {
+        localStorage.setItem(THEMES_KEY, JSON.stringify(themes));
       }
 
       function nowISODate() {
@@ -239,6 +509,22 @@
         return Math.max(min, Math.min(max, n));
       }
 
+      function monthKey(date = new Date()) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, "0");
+        return `${y}-${m}`;
+      }
+
+      function recentMonthKeys(count) {
+        const months = [];
+        const d = new Date();
+        for (let i = 0; i < count; i++) {
+          const current = new Date(d.getFullYear(), d.getMonth() - i, 1);
+          months.push(monthKey(current));
+        }
+        return months;
+      }
+
       function uid() {
         // good enough for local
         return (
@@ -252,7 +538,17 @@
       const elCountText = document.getElementById("countText");
       const elUpdatedText = document.getElementById("updatedText");
 
+      const elThemeList = document.getElementById("themeList");
+      const elThemeEmpty = document.getElementById("themeEmptyState");
+      const elThemeCountText = document.getElementById("themeCountText");
+
+      const tabViewport = document.getElementById("tabViewport");
+      const tabButtons = [...document.querySelectorAll(".tab-btn")];
+      const tasksPanel = document.getElementById("tasksPanel");
+      const themesPanel = document.getElementById("themesPanel");
+
       const btnAddFab = document.getElementById("btnAddFab");
+      const btnAddThemeInline = document.getElementById("btnAddThemeInline");
 
       const toast = document.getElementById("toast");
       const toastMessage = document.getElementById("toastMessage");
@@ -271,10 +567,33 @@
       const inputLastDone = document.getElementById("taskLastDone");
       const inputNote = document.getElementById("taskNote");
 
+      const themeBackdrop = document.getElementById("themeBackdrop");
+      const themeModalTitle = document.getElementById("themeModalTitle");
+      const btnCloseThemeModal = document.getElementById("btnCloseThemeModal");
+      const btnCancelTheme = document.getElementById("btnCancelTheme");
+      const btnDeleteTheme = document.getElementById("btnDeleteTheme");
+      const themeForm = document.getElementById("themeForm");
+      const themeId = document.getElementById("themeId");
+      const themeTitle = document.getElementById("themeTitle");
+      const themeObjective = document.getElementById("themeObjective");
+
+      const midBackdrop = document.getElementById("midBackdrop");
+      const btnCloseMidModal = document.getElementById("btnCloseMidModal");
+      const btnCancelMid = document.getElementById("btnCancelMid");
+      const btnArchiveMid = document.getElementById("btnArchiveMid");
+      const midForm = document.getElementById("midForm");
+      const midThemeId = document.getElementById("midThemeId");
+      const midId = document.getElementById("midId");
+      const midText = document.getElementById("midText");
+
       /** @type {Task[]} */
       let tasks = loadTasks();
+      /** @type {Theme[]} */
+      let themes = loadThemes();
       let lastAction = null;
       let toastTimer = null;
+      let currentTab = "tasks";
+      const openHistory = new Set();
 
       function formatUpdatedAt() {
         const raw = localStorage.getItem("bokabikun.updatedAt");
@@ -317,9 +636,13 @@
           const eb = daysBetween(b.lastDone, today);
           // Remaining % = (remaining days / interval days) * 100; guard zero interval.
           const pa =
-            a.intervalDays > 0 ? ((a.intervalDays - ea) / a.intervalDays) * 100 : -Infinity;
+            a.intervalDays > 0
+              ? ((a.intervalDays - ea) / a.intervalDays) * 100
+              : -Infinity;
           const pb =
-            b.intervalDays > 0 ? ((b.intervalDays - eb) / b.intervalDays) * 100 : -Infinity;
+            b.intervalDays > 0
+              ? ((b.intervalDays - eb) / b.intervalDays) * 100
+              : -Infinity;
           // Same %: fall back to remaining days for stable ordering.
           if (pa !== pb) return pa - pb;
           const ra = a.intervalDays - ea;
@@ -415,6 +738,217 @@
         }
       }
 
+      function renderThemes() {
+        themes = loadThemes();
+        const currentMonth = monthKey();
+        const monthKeys = recentMonthKeys(12);
+
+        elThemeList.innerHTML = "";
+        elThemeCountText.textContent = `${themes.length}件`;
+        if (themes.length === 0) {
+          elThemeEmpty.classList.remove("hidden");
+        } else {
+          elThemeEmpty.classList.add("hidden");
+        }
+
+        for (const theme of themes) {
+          const activeTodos = theme.midTodos.filter((m) => !m.archivedAt);
+          const historyOpen = openHistory.has(theme.id);
+          const allTodos = theme.midTodos;
+          let sumCurrent = 0;
+          let countCurrent = 0;
+          for (const m of allTodos) {
+            const value = m.progressByMonth?.[currentMonth];
+            if (typeof value !== "number") continue;
+            sumCurrent += value;
+            countCurrent += 1;
+          }
+          const avgCurrent =
+            countCurrent > 0 ? Math.round(sumCurrent / countCurrent) : 0;
+
+          const card = document.createElement("div");
+          card.className =
+            "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm";
+
+          const activeHtml =
+            activeTodos.length === 0
+              ? `<p class="text-xs text-slate-400">マイルストーンなし</p>`
+              : activeTodos
+                  .map((m) => {
+                    const progress = clamp(
+                      m.progressByMonth?.[currentMonth] || 0,
+                      0,
+                      100
+                    );
+                    return `
+                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <button
+                          data-action="open-midtodo"
+                          data-theme-id="${theme.id}"
+                          data-mid-id="${m.id}"
+                          class="w-full text-left"
+                        >
+                          <p class="text-sm text-slate-800 whitespace-pre-wrap break-words">${formatMultiline(
+                            m.text
+                          )}</p>
+                        </button>
+                        <div class="mt-2">
+                          <div class="flex items-center justify-between text-[11px] text-slate-500">
+                            <span>今月</span>
+                            <div class="flex items-center gap-2">
+                              <span>${progress}%</span>
+                              <div class="flex items-center gap-1">
+                                <button
+                                  data-action="decrement-midtodo"
+                                  data-theme-id="${theme.id}"
+                                  data-mid-id="${m.id}"
+                                  class="icon-press p-0"
+                                  aria-label="進捗を減らす"
+                                >
+                                  <span class="icon-swap" data-role="icon-swap">
+                                    <img
+                                      src="icon-button.svg"
+                                      alt=""
+                                      class="icon-base"
+                                      style="transform: scaleY(-1);"
+                                    />
+                                    <img
+                                      src="icon-button-active.svg"
+                                      alt=""
+                                      class="icon-active"
+                                      style="transform: scaleY(-1);"
+                                    />
+                                  </span>
+                                </button>
+                                <button
+                                  data-action="increment-midtodo"
+                                  data-theme-id="${theme.id}"
+                                  data-mid-id="${m.id}"
+                                  class="icon-press p-0"
+                                  aria-label="進捗を増やす"
+                                >
+                                  <span class="icon-swap" data-role="icon-swap">
+                                    <img src="icon-button.svg" alt="" class="icon-base" />
+                                    <img
+                                      src="icon-button-active.svg"
+                                      alt=""
+                                      class="icon-active"
+                                    />
+                                  </span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                            <div class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-sky-400" style="width:${progress}%"></div>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  })
+                  .join("");
+
+          const historyHtml = monthKeys
+            .map((key) => {
+              let sum = 0;
+              let count = 0;
+              for (const m of allTodos) {
+                const value = m.progressByMonth?.[key];
+                if (typeof value !== "number") continue;
+                sum += value;
+                count += 1;
+              }
+              const avg = count > 0 ? Math.round(sum / count) : null;
+              return `
+                <div class="rounded-lg border border-slate-200 bg-white px-2 py-2 text-center">
+                  <div class="text-[11px] text-slate-500">${key}</div>
+                  <div class="mt-1 text-sm font-semibold text-slate-800">${
+                    avg === null ? "—" : `${avg}%`
+                  }</div>
+                </div>
+              `;
+            })
+            .join("");
+
+          card.innerHTML = `
+            <div
+              class="flex items-start justify-between gap-3 cursor-pointer"
+              data-action="edit-theme"
+              data-id="${theme.id}"
+              role="button"
+              tabindex="0"
+            >
+              <div class="min-w-0">
+                <h3 class="text-base font-semibold text-slate-900 whitespace-pre-wrap break-words">${formatMultiline(
+                  theme.title
+                )}</h3>
+                <p class="mt-2 text-sm text-slate-700 whitespace-pre-wrap break-words">${formatMultiline(
+                  theme.objective
+                )}</p>
+                <div class="mt-3">
+                  <div class="flex items-center justify-between text-[11px] text-slate-500">
+                    <span>今月の進捗</span>
+                    <span>${clamp(avgCurrent, 0, 100)}%</span>
+                  </div>
+                  <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div class="h-full rounded-full bg-gradient-to-r from-emerald-400 to-sky-400" style="width:${clamp(
+                      avgCurrent,
+                      0,
+                      100
+                    )}%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <p class="text-xs font-semibold text-slate-500">マイルストーン</p>
+              <div class="mt-2 grid gap-2">
+                ${activeHtml}
+              </div>
+              <div class="mt-3 flex items-center gap-2">
+                <input
+                  data-role="midtodo-input"
+                  data-theme-id="${theme.id}"
+                  type="text"
+                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
+                  placeholder="マイルストーンを追加"
+                  maxlength="120"
+                />
+                <button
+                  data-action="add-midtodo"
+                  data-id="${theme.id}"
+                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-3 py-2 text-xs font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+                  aria-label="マイルストーンを追加"
+                >
+                  ＋
+                </button>
+              </div>
+            </div>
+
+            <div class="mt-5">
+              <div class="flex items-center justify-between">
+                <p class="text-xs font-semibold text-slate-500">月次記録</p>
+                <button
+                  data-action="toggle-history"
+                  data-id="${theme.id}"
+                  class="rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-600 hover:bg-slate-100"
+                >
+                  ${historyOpen ? "閉じる" : "開く"}
+                </button>
+              </div>
+              <div class="mt-2 grid grid-cols-3 gap-2 ${
+                historyOpen ? "" : "hidden"
+              }" data-role="history-panel" data-theme-id="${theme.id}">
+                ${historyHtml}
+              </div>
+            </div>
+          `;
+
+          elThemeList.appendChild(card);
+        }
+      }
+
       function escapeHtml(s) {
         return String(s)
           .replaceAll("&", "&amp;")
@@ -422,6 +956,23 @@
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      function formatMultiline(s) {
+        return escapeHtml(s).replaceAll("\n", "<br>");
+      }
+
+      const iconFlashTimers = new WeakMap();
+
+      function flashIcon(wrapper) {
+        if (!wrapper) return;
+        wrapper.classList.add("flash");
+        const existing = iconFlashTimers.get(wrapper);
+        if (existing) clearTimeout(existing);
+        const timer = setTimeout(() => {
+          wrapper.classList.remove("flash");
+        }, 500);
+        iconFlashTimers.set(wrapper, timer);
       }
 
       function openModal(mode, task) {
@@ -489,11 +1040,158 @@
         return loadTasks().find((t) => t.id === id);
       }
 
+      function findTheme(id) {
+        return loadThemes().find((t) => t.id === id);
+      }
+
+      function upsertTheme(theme) {
+        const all = loadThemes();
+        const idx = all.findIndex((t) => t.id === theme.id);
+        if (idx >= 0) {
+          all[idx] = theme;
+        } else {
+          all.push(theme);
+        }
+        saveThemes(all);
+      }
+
+      function deleteTheme(id) {
+        const all = loadThemes().filter((t) => t.id !== id);
+        saveThemes(all);
+      }
+
+      function openThemeModal(mode, theme) {
+        themeBackdrop.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+
+        if (mode === "create") {
+          themeModalTitle.textContent = "プロジェクト追加";
+          btnDeleteTheme.classList.add("hidden");
+          themeId.value = "";
+          themeTitle.value = "";
+          themeObjective.value = "";
+          themeTitle.focus();
+          return;
+        }
+
+        themeModalTitle.textContent = "プロジェクト編集";
+        btnDeleteTheme.classList.remove("hidden");
+        themeId.value = theme.id;
+        themeTitle.value = theme.title;
+        themeObjective.value = theme.objective;
+        themeTitle.focus();
+      }
+
+      function closeThemeModal() {
+        themeBackdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      function openMidModal(themeIdValue, midIdValue) {
+        const theme = findTheme(themeIdValue);
+        const mid = theme?.midTodos.find((m) => m.id === midIdValue);
+        if (!theme || !mid) return;
+        midBackdrop.classList.remove("hidden");
+        document.body.classList.add("overflow-hidden");
+        midThemeId.value = theme.id;
+        midId.value = mid.id;
+        midText.value = mid.text;
+        midText.focus();
+      }
+
+      function closeMidModal() {
+        midBackdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+      }
+
+      function addMidTodo(themeIdValue, text) {
+        const theme = findTheme(themeIdValue);
+        if (!theme) return;
+        theme.midTodos.push({
+          id: uid(),
+          text,
+          progressByMonth: {},
+          createdAt: new Date().toISOString(),
+        });
+        theme.updatedAt = new Date().toISOString();
+        upsertTheme(theme);
+      }
+
+      function archiveMidTodo(themeIdValue, midId) {
+        const theme = findTheme(themeIdValue);
+        if (!theme) return;
+        const mid = theme.midTodos.find((m) => m.id === midId);
+        if (!mid || mid.archivedAt) return;
+        mid.archivedAt = new Date().toISOString();
+        theme.updatedAt = new Date().toISOString();
+        upsertTheme(theme);
+      }
+
+      function bumpMidTodoProgress(themeIdValue, midId, delta) {
+        const theme = findTheme(themeIdValue);
+        if (!theme) return;
+        const mid = theme.midTodos.find((m) => m.id === midId);
+        if (!mid || mid.archivedAt) return;
+        const key = monthKey();
+        const current = clamp(mid.progressByMonth?.[key] || 0, 0, 100);
+        mid.progressByMonth = mid.progressByMonth || {};
+        mid.progressByMonth[key] = clamp(current + delta, 0, 100);
+        theme.updatedAt = new Date().toISOString();
+        upsertTheme(theme);
+      }
+
+      function setTab(tab) {
+        currentTab = tab;
+        const isThemes = tab === "themes";
+        tasksPanel.classList.toggle("hidden", isThemes);
+        themesPanel.classList.toggle("hidden", !isThemes);
+        tabButtons.forEach((btn) => {
+          const selected = btn.getAttribute("data-tab") === tab;
+          btn.setAttribute("aria-selected", selected ? "true" : "false");
+          btn.classList.toggle("bg-white", selected);
+          btn.classList.toggle("text-slate-900", selected);
+          btn.classList.toggle("text-slate-700", !selected);
+        });
+        btnAddFab.textContent = "＋ 追加";
+        btnAddFab.setAttribute("aria-label", "タスクを追加");
+        btnAddFab.classList.toggle("hidden", isThemes);
+      }
+
       // ===== Events =====
       btnAddFab.addEventListener("click", () => openModal("create"));
+      btnAddThemeInline.addEventListener("click", () =>
+        openThemeModal("create")
+      );
+
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () =>
+          setTab(btn.getAttribute("data-tab"))
+        );
+      });
+
+      let swipeStartX = null;
+      tabViewport.addEventListener("touchstart", (e) => {
+        swipeStartX = e.touches[0].clientX;
+      });
+      tabViewport.addEventListener("touchend", (e) => {
+        if (swipeStartX === null) return;
+        const endX = e.changedTouches[0].clientX;
+        const delta = endX - swipeStartX;
+        swipeStartX = null;
+        if (Math.abs(delta) < 60) return;
+        if (delta < 0) {
+          setTab("themes");
+        } else {
+          setTab("tasks");
+        }
+      });
 
       btnCloseModal.addEventListener("click", closeModal);
       btnCancel.addEventListener("click", closeModal);
+      btnCloseThemeModal.addEventListener("click", closeThemeModal);
+      btnCancelTheme.addEventListener("click", closeThemeModal);
+      btnCloseMidModal.addEventListener("click", closeMidModal);
+      btnCancelMid.addEventListener("click", closeMidModal);
       document.addEventListener("click", (e) => {
         if (toast.classList.contains("hidden")) return;
         if (e.target.closest('[data-action="done"]')) return;
@@ -516,10 +1214,18 @@
       backdrop.addEventListener("click", (e) => {
         if (e.target === backdrop) closeModal();
       });
+      themeBackdrop.addEventListener("click", (e) => {
+        if (e.target === themeBackdrop) closeThemeModal();
+      });
+      midBackdrop.addEventListener("click", (e) => {
+        if (e.target === midBackdrop) closeMidModal();
+      });
 
       document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && !backdrop.classList.contains("hidden"))
-          closeModal();
+        if (e.key !== "Escape") return;
+        if (!backdrop.classList.contains("hidden")) closeModal();
+        if (!themeBackdrop.classList.contains("hidden")) closeThemeModal();
+        if (!midBackdrop.classList.contains("hidden")) closeMidModal();
       });
 
       btnDelete.addEventListener("click", () => {
@@ -565,6 +1271,68 @@
         render();
       });
 
+      btnDeleteTheme.addEventListener("click", () => {
+        const id = themeId.value;
+        if (!id) return;
+        if (confirm("このプロジェクトを削除しますか？")) {
+          deleteTheme(id);
+          closeThemeModal();
+          renderThemes();
+        }
+      });
+
+      themeForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const id = themeId.value || uid();
+        const title = themeTitle.value.trim();
+        const objective = themeObjective.value.trim();
+        if (!title || !objective) return;
+
+        const existing = findTheme(id);
+        const createdAt = existing?.createdAt || new Date().toISOString();
+        const midTodos = existing?.midTodos || [];
+
+        /** @type {Theme} */
+        const theme = {
+          id,
+          title,
+          objective,
+          midTodos,
+          createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+
+        upsertTheme(theme);
+        closeThemeModal();
+        renderThemes();
+      });
+
+      btnArchiveMid.addEventListener("click", () => {
+        const themeIdValue = midThemeId.value;
+        const midIdValue = midId.value;
+        if (!themeIdValue || !midIdValue) return;
+        archiveMidTodo(themeIdValue, midIdValue);
+        closeMidModal();
+        renderThemes();
+      });
+
+      midForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const themeIdValue = midThemeId.value;
+        const midIdValue = midId.value;
+        if (!themeIdValue || !midIdValue) return;
+        const theme = findTheme(themeIdValue);
+        const mid = theme?.midTodos.find((m) => m.id === midIdValue);
+        if (!theme || !mid) return;
+        const next = midText.value.trim();
+        if (!next) return;
+        mid.text = next;
+        theme.updatedAt = new Date().toISOString();
+        upsertTheme(theme);
+        closeMidModal();
+        renderThemes();
+      });
+
       elList.addEventListener("click", (e) => {
         const btn = e.target.closest("button");
         const action = btn?.getAttribute("data-action");
@@ -593,6 +1361,93 @@
         if (t) openModal("edit", t);
       });
 
+      elThemeList.addEventListener("click", (e) => {
+        const btn = e.target.closest("button");
+        const action = btn?.getAttribute("data-action");
+        const editableCard = e.target.closest('[data-action="edit-theme"]');
+        if (!action && editableCard) {
+          const id = editableCard.getAttribute("data-id");
+          const theme = findTheme(id);
+          if (theme) openThemeModal("edit", theme);
+          return;
+        }
+        if (!action) return;
+
+        if (action === "edit-theme") {
+          const id = btn.getAttribute("data-id");
+          const theme = findTheme(id);
+          if (theme) openThemeModal("edit", theme);
+          return;
+        }
+
+        if (action === "add-midtodo") {
+          const id = btn.getAttribute("data-id");
+          const input = elThemeList.querySelector(
+            `[data-role="midtodo-input"][data-theme-id="${id}"]`
+          );
+          const text = input?.value.trim() || "";
+          if (!id || !text) return;
+          addMidTodo(id, text);
+          input.value = "";
+          renderThemes();
+          return;
+        }
+
+        if (action === "open-midtodo") {
+          const themeIdValue = btn.getAttribute("data-theme-id");
+          const midIdValue = btn.getAttribute("data-mid-id");
+          if (!themeIdValue || !midIdValue) return;
+          openMidModal(themeIdValue, midIdValue);
+          return;
+        }
+
+        if (action === "increment-midtodo" || action === "decrement-midtodo") {
+          const themeIdValue = btn.getAttribute("data-theme-id");
+          const midIdValue = btn.getAttribute("data-mid-id");
+          if (!themeIdValue || !midIdValue) return;
+          const delta = action === "increment-midtodo" ? 5 : -5;
+          bumpMidTodoProgress(themeIdValue, midIdValue, delta);
+          renderThemes();
+          const flashed = elThemeList.querySelector(
+            `button[data-action="${action}"][data-theme-id="${themeIdValue}"][data-mid-id="${midIdValue}"] [data-role="icon-swap"]`
+          );
+          flashIcon(flashed);
+          return;
+        }
+
+        if (action === "toggle-history") {
+          const id = btn.getAttribute("data-id");
+          if (!id) return;
+          if (openHistory.has(id)) {
+            openHistory.delete(id);
+          } else {
+            openHistory.add(id);
+          }
+          renderThemes();
+        }
+      });
+
+      elThemeList.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          const editableCard = e.target.closest('[data-action="edit-theme"]');
+          if (editableCard) {
+            const id = editableCard.getAttribute("data-id");
+            const theme = findTheme(id);
+            if (theme) openThemeModal("edit", theme);
+            return;
+          }
+        }
+        if (e.key !== "Enter") return;
+        const input = e.target.closest('[data-role="midtodo-input"]');
+        if (!input) return;
+        const id = input.getAttribute("data-theme-id");
+        const text = input.value.trim();
+        if (!id || !text) return;
+        addMidTodo(id, text);
+        input.value = "";
+        renderThemes();
+      });
+
       // Initial render
       if (!localStorage.getItem("bokabikun.updatedAt")) {
         localStorage.setItem("bokabikun.updatedAt", new Date().toISOString());
@@ -615,7 +1470,12 @@
 
         saveTasks(sample);
       }
+      if (!localStorage.getItem(THEMES_KEY)) {
+        saveThemes([]);
+      }
       render();
+      renderThemes();
+      setTab("tasks");
 
       // PWA service worker
       if ("serviceWorker" in navigator) {
