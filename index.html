@@ -651,6 +651,7 @@
       const elThemeCountText = document.getElementById("themeCountText");
 
       const tabViewport = document.getElementById("tabViewport");
+      const elBody = document.body;
       const tabButtons = [...document.querySelectorAll(".tab-btn")];
       const tasksPanel = document.getElementById("tasksPanel");
       const themesPanel = document.getElementById("themesPanel");
@@ -1364,21 +1365,47 @@
       });
 
       let swipeStartX = null;
-      tabViewport.addEventListener("touchstart", (e) => {
+      let swipeStartY = null;
+      function isModalOpen() {
+        return (
+          !backdrop.classList.contains("hidden") ||
+          !themeBackdrop.classList.contains("hidden") ||
+          !midBackdrop.classList.contains("hidden") ||
+          !monthBackdrop.classList.contains("hidden") ||
+          !monthSwitchBackdrop.classList.contains("hidden")
+        );
+      }
+      function handleSwipeStart(e) {
         swipeStartX = e.touches[0].clientX;
-      });
-      tabViewport.addEventListener("touchend", (e) => {
-        if (swipeStartX === null) return;
+        swipeStartY = e.touches[0].clientY;
+      }
+      function handleSwipeEnd(e) {
+        if (swipeStartX === null || swipeStartY === null) return;
+        if (isModalOpen()) {
+          swipeStartX = null;
+          swipeStartY = null;
+          return;
+        }
         const endX = e.changedTouches[0].clientX;
-        const delta = endX - swipeStartX;
+        const endY = e.changedTouches[0].clientY;
+        const deltaX = endX - swipeStartX;
+        const deltaY = endY - swipeStartY;
         swipeStartX = null;
-        if (Math.abs(delta) < 60) return;
-        if (delta < 0) {
+        swipeStartY = null;
+        if (Math.abs(deltaX) < 60) return;
+        if (Math.abs(deltaY) > Math.abs(deltaX)) return;
+        if (deltaX < 0) {
           setTab("themes");
         } else {
           setTab("tasks");
         }
+      }
+      tabViewport.addEventListener("touchstart", handleSwipeStart, {
+        passive: true,
       });
+      tabViewport.addEventListener("touchend", handleSwipeEnd);
+      elBody.addEventListener("touchstart", handleSwipeStart, { passive: true });
+      elBody.addEventListener("touchend", handleSwipeEnd);
 
       btnCloseModal.addEventListener("click", closeModal);
       btnCancel.addEventListener("click", closeModal);
