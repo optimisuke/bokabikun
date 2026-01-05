@@ -310,11 +310,20 @@
       function render() {
         tasks = loadTasks();
 
-        // sort: smaller remaining days first; overdue with longer overdue first
+        // sort: smaller remaining percent first; overdue prioritized
         const today = nowISODate();
         const sorted = [...tasks].sort((a, b) => {
-          const ra = a.intervalDays - daysBetween(a.lastDone, today);
-          const rb = b.intervalDays - daysBetween(b.lastDone, today);
+          const ea = daysBetween(a.lastDone, today);
+          const eb = daysBetween(b.lastDone, today);
+          // Remaining % = (remaining days / interval days) * 100; guard zero interval.
+          const pa =
+            a.intervalDays > 0 ? ((a.intervalDays - ea) / a.intervalDays) * 100 : -Infinity;
+          const pb =
+            b.intervalDays > 0 ? ((b.intervalDays - eb) / b.intervalDays) * 100 : -Infinity;
+          // Same %: fall back to remaining days for stable ordering.
+          if (pa !== pb) return pa - pb;
+          const ra = a.intervalDays - ea;
+          const rb = b.intervalDays - eb;
           return ra - rb;
         });
 
