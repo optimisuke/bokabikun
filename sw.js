@@ -1,9 +1,13 @@
-const CACHE_NAME = "bokabikun-v3";
+const CACHE_NAME = "bokabikun-v1.1.0";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icon.svg",
+  "./icon-button.svg",
+  "./icon-button-active.svg",
+  "./icon-archive.svg",
+  "./icon-delete.svg",
 ];
 
 self.addEventListener("install", (event) => {

@@ -490,7 +490,45 @@
             </button>
           </div>
 
-          <div id="monthModalBody" class="space-y-3 p-4 text-sm"></div>
+          <div
+            id="monthModalBody"
+            class="space-y-3 p-4 text-sm max-h-[65vh] overflow-y-auto"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Month Switch Modal -->
+    <div id="monthSwitchBackdrop" class="fixed inset-0 z-20 hidden bg-black/40 p-4">
+      <div class="mx-auto mt-10 max-w-md">
+        <div class="rounded-2xl bg-white shadow-xl ring-1 ring-slate-200">
+          <div
+            class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
+          >
+            <h3 class="text-sm font-semibold text-slate-800">月が変わりました</h3>
+          </div>
+          <div class="space-y-3 p-4 text-sm text-slate-700">
+            <p>今月に進めますか？</p>
+            <p class="text-xs text-slate-500">
+              「先月のまま」を選ぶと、この月で進捗を続けられます。リロード時に再度確認します。
+            </p>
+            <div class="mt-4 flex items-center justify-end gap-2">
+              <button
+                id="btnKeepMonth"
+                type="button"
+                class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                先月のまま
+              </button>
+              <button
+                id="btnAdvanceMonth"
+                type="button"
+                class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+              >
+                今月に進む
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -499,6 +537,7 @@
       // ===== Storage =====
       const STORAGE_KEY = "bokabikun.tasks.v1";
       const THEMES_KEY = "bokabikun.themes.v1";
+      const ACTIVE_MONTH_KEY = "bokabikun.activeMonth";
 
       /** @typedef {{id:string,name:string,intervalDays:number,lastDone:string,note?:string,createdAt:string,updatedAt:string}} Task */
       /** @typedef {{id:string,text:string,progressByMonth:Record<string,number>,createdAt:string,archivedAt?:string}} MidTodo */
@@ -567,14 +606,31 @@
         return `${y}-${m}`;
       }
 
-      function recentMonthKeys(count) {
+      function recentMonthKeys(count, baseKey) {
         const months = [];
-        const d = new Date();
+        const base = baseKey ? new Date(`${baseKey}-01T00:00:00`) : new Date();
         for (let i = 0; i < count; i++) {
-          const current = new Date(d.getFullYear(), d.getMonth() - i, 1);
+          const current = new Date(base.getFullYear(), base.getMonth() - i, 1);
           months.push(monthKey(current));
         }
         return months;
+      }
+
+      function initActiveMonth() {
+        const current = monthKey();
+        const stored = localStorage.getItem(ACTIVE_MONTH_KEY);
+        if (!stored) {
+          localStorage.setItem(ACTIVE_MONTH_KEY, current);
+          activeMonthKey = current;
+          return;
+        }
+        if (stored !== current && !monthSwitchShown) {
+          monthSwitchShown = true;
+          monthSwitchBackdrop.classList.remove("hidden");
+          document.body.classList.add("overflow-hidden");
+          return;
+        }
+        activeMonthKey = stored;
       }
 
       function uid() {
@@ -645,6 +701,10 @@
       const monthModalTitle = document.getElementById("monthModalTitle");
       const monthModalBody = document.getElementById("monthModalBody");
 
+      const monthSwitchBackdrop = document.getElementById("monthSwitchBackdrop");
+      const btnKeepMonth = document.getElementById("btnKeepMonth");
+      const btnAdvanceMonth = document.getElementById("btnAdvanceMonth");
+
       /** @type {Task[]} */
       let tasks = loadTasks();
       /** @type {Theme[]} */
@@ -653,6 +713,8 @@
       let toastTimer = null;
       let currentTab = "tasks";
       const openHistory = new Set();
+      let activeMonthKey = null;
+      let monthSwitchShown = false;
 
       function formatUpdatedAt() {
         const raw = localStorage.getItem("bokabikun.updatedAt");
@@ -799,8 +861,8 @@
 
       function renderThemes() {
         themes = loadThemes();
-        const currentMonth = monthKey();
-        const monthKeys = recentMonthKeys(12);
+        const currentMonth = activeMonthKey || monthKey();
+        const monthKeys = recentMonthKeys(12, currentMonth);
 
         elThemeList.innerHTML = "";
         elThemeCountText.textContent = `${themes.length}件`;
@@ -1264,7 +1326,7 @@
         if (!theme) return;
         const mid = theme.midTodos.find((m) => m.id === midId);
         if (!mid || mid.archivedAt) return;
-        const key = monthKey();
+        const key = activeMonthKey || monthKey();
         const current = clamp(mid.progressByMonth?.[key] || 0, 0, 100);
         mid.progressByMonth = mid.progressByMonth || {};
         mid.progressByMonth[key] = clamp(current + delta, 0, 100);
@@ -1325,6 +1387,21 @@
       btnCloseMidModal.addEventListener("click", closeMidModal);
       btnCancelMid.addEventListener("click", closeMidModal);
       btnCloseMonthModal.addEventListener("click", closeMonthModal);
+      btnKeepMonth.addEventListener("click", () => {
+        const stored = localStorage.getItem(ACTIVE_MONTH_KEY);
+        activeMonthKey = stored || monthKey();
+        monthSwitchBackdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        renderThemes();
+      });
+      btnAdvanceMonth.addEventListener("click", () => {
+        const current = monthKey();
+        localStorage.setItem(ACTIVE_MONTH_KEY, current);
+        activeMonthKey = current;
+        monthSwitchBackdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        renderThemes();
+      });
       document.addEventListener("click", (e) => {
         if (toast.classList.contains("hidden")) return;
         if (e.target.closest('[data-action="done"]')) return;
@@ -1356,6 +1433,14 @@
       monthBackdrop.addEventListener("click", (e) => {
         if (e.target === monthBackdrop) closeMonthModal();
       });
+      monthSwitchBackdrop.addEventListener("click", (e) => {
+        if (e.target !== monthSwitchBackdrop) return;
+        const stored = localStorage.getItem(ACTIVE_MONTH_KEY);
+        activeMonthKey = stored || monthKey();
+        monthSwitchBackdrop.classList.add("hidden");
+        document.body.classList.remove("overflow-hidden");
+        renderThemes();
+      });
 
       document.addEventListener("keydown", (e) => {
         if (e.key !== "Escape") return;
@@ -1363,6 +1448,13 @@
         if (!themeBackdrop.classList.contains("hidden")) closeThemeModal();
         if (!midBackdrop.classList.contains("hidden")) closeMidModal();
         if (!monthBackdrop.classList.contains("hidden")) closeMonthModal();
+        if (!monthSwitchBackdrop.classList.contains("hidden")) {
+          const stored = localStorage.getItem(ACTIVE_MONTH_KEY);
+          activeMonthKey = stored || monthKey();
+          monthSwitchBackdrop.classList.add("hidden");
+          document.body.classList.remove("overflow-hidden");
+          renderThemes();
+        }
       });
 
       btnDelete.addEventListener("click", () => {
@@ -1642,6 +1734,7 @@
       if (!localStorage.getItem(THEMES_KEY)) {
         saveThemes([]);
       }
+      initActiveMonth();
       render();
       renderThemes();
       setTab("tasks");
