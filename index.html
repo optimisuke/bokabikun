@@ -58,11 +58,11 @@
       }
       body.drag-mode {
         user-select: none;
-        cursor: grabbing;
+        overflow: hidden;
+        touch-action: none;
       }
       .dragging-item {
-        opacity: 0.6;
-        transform: scale(0.98);
+        opacity: 0.65;
       }
     </style>
   </head>
@@ -354,43 +354,65 @@
               ></textarea>
             </div>
 
-            <div class="flex items-center justify-between gap-2 pt-1">
-              <div class="flex items-center gap-2">
-                <button
-                  id="btnArchiveTheme"
-                  type="button"
-                  class="hidden rounded-xl border border-slate-200 bg-white p-2 hover:bg-slate-50"
-                  aria-label="アーカイブ"
-                  title="アーカイブ"
-                >
-                  <img src="icon-archive.svg" alt="" class="h-4 w-4" />
-                </button>
-                <button
-                  id="btnDeleteTheme"
-                  type="button"
-                  class="hidden rounded-xl border border-red-200 bg-white p-2 hover:bg-red-50"
-                  aria-label="削除"
-                  title="削除"
-                >
-                  <img src="icon-delete.svg" alt="" class="h-4 w-4" />
-                </button>
-              </div>
-
-              <div class="ml-auto flex items-center gap-2">
-                <button
-                  id="btnCancelTheme"
-                  type="button"
-                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  キャンセル
-                </button>
-                <button
-                  type="submit"
-                  class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
-                >
-                  保存
-                </button>
-              </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button
+                id="btnArchiveTheme"
+                type="button"
+                class="hidden rounded-xl border border-slate-200 bg-white p-2 hover:bg-slate-50"
+                aria-label="アーカイブ"
+                title="アーカイブ"
+              >
+                <img src="icon-archive.svg" alt="" class="h-4 w-4" />
+              </button>
+              <button
+                id="btnDeleteTheme"
+                type="button"
+                class="hidden rounded-xl border border-red-200 bg-white p-2 hover:bg-red-50"
+                aria-label="削除"
+                title="削除"
+              >
+                <img src="icon-delete.svg" alt="" class="h-4 w-4" />
+              </button>
+              <button
+                id="btnMoveThemeUp"
+                type="button"
+                class="hidden rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="上へ移動"
+                title="上へ移動"
+              >
+                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none">
+                  <path
+                    d="M4 12l6-6 6 6"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                id="btnMoveThemeDown"
+                type="button"
+                class="hidden rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="下へ移動"
+                title="下へ移動"
+              >
+                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none">
+                  <path
+                    d="M4 8l6 6 6-6"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                type="submit"
+                class="ml-auto rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
+              >
+                保存
+              </button>
             </div>
           </form>
         </div>
@@ -405,7 +427,7 @@
             class="flex items-center justify-between border-b border-slate-200 px-4 py-3"
           >
             <h3 id="midModalTitle" class="text-sm font-semibold text-slate-800">
-              マイルストーン編集
+              アクション編集
             </h3>
             <button
               id="btnCloseMidModal"
@@ -421,7 +443,7 @@
 
             <div>
               <label class="text-xs font-medium text-slate-600"
-                >マイルストーン</label
+                >アクション</label
               >
               <textarea
                 id="midText"
@@ -432,36 +454,61 @@
               ></textarea>
             </div>
 
-            <div class="flex items-center justify-between gap-2 pt-1">
-              <div class="flex items-center gap-2">
-                <button
-                  id="btnArchiveMid"
-                  type="button"
-                  class="rounded-xl border border-slate-200 bg-white p-2 hover:bg-slate-50"
-                  aria-label="アーカイブ"
-                  title="アーカイブ"
-                >
-                  <img src="icon-archive.svg" alt="" class="h-4 w-4" />
-                </button>
-                <button
-                  id="btnDeleteMid"
-                  type="button"
-                  class="rounded-xl border border-red-200 bg-white p-2 hover:bg-red-50"
-                  aria-label="削除"
-                  title="削除"
-                >
-                  <img src="icon-delete.svg" alt="" class="h-4 w-4" />
-                </button>
-              </div>
+            <div class="flex items-center gap-2 pt-1">
+              <button
+                id="btnArchiveMid"
+                type="button"
+                class="rounded-xl border border-slate-200 bg-white p-2 hover:bg-slate-50"
+                aria-label="アーカイブ"
+                title="アーカイブ"
+              >
+                <img src="icon-archive.svg" alt="" class="h-4 w-4" />
+              </button>
+              <button
+                id="btnDeleteMid"
+                type="button"
+                class="rounded-xl border border-red-200 bg-white p-2 hover:bg-red-50"
+                aria-label="削除"
+                title="削除"
+              >
+                <img src="icon-delete.svg" alt="" class="h-4 w-4" />
+              </button>
+              <button
+                id="btnMoveMidUp"
+                type="button"
+                class="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="上へ移動"
+                title="上へ移動"
+              >
+                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none">
+                  <path
+                    d="M4 12l6-6 6 6"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+              <button
+                id="btnMoveMidDown"
+                type="button"
+                class="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="下へ移動"
+                title="下へ移動"
+              >
+                <svg viewBox="0 0 20 20" class="h-4 w-4" fill="none">
+                  <path
+                    d="M4 8l6 6 6-6"
+                    stroke="currentColor"
+                    stroke-width="1.6"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
 
               <div class="ml-auto flex items-center gap-2">
-                <button
-                  id="btnCancelMid"
-                  type="button"
-                  class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                >
-                  キャンセル
-                </button>
                 <button
                   type="submit"
                   class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-4 py-2 text-sm font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
@@ -690,7 +737,8 @@
       const themeBackdrop = document.getElementById("themeBackdrop");
       const themeModalTitle = document.getElementById("themeModalTitle");
       const btnCloseThemeModal = document.getElementById("btnCloseThemeModal");
-      const btnCancelTheme = document.getElementById("btnCancelTheme");
+      const btnMoveThemeUp = document.getElementById("btnMoveThemeUp");
+      const btnMoveThemeDown = document.getElementById("btnMoveThemeDown");
       const btnArchiveTheme = document.getElementById("btnArchiveTheme");
       const btnDeleteTheme = document.getElementById("btnDeleteTheme");
       const themeForm = document.getElementById("themeForm");
@@ -700,9 +748,10 @@
 
       const midBackdrop = document.getElementById("midBackdrop");
       const btnCloseMidModal = document.getElementById("btnCloseMidModal");
-      const btnCancelMid = document.getElementById("btnCancelMid");
       const btnArchiveMid = document.getElementById("btnArchiveMid");
       const btnDeleteMid = document.getElementById("btnDeleteMid");
+      const btnMoveMidUp = document.getElementById("btnMoveMidUp");
+      const btnMoveMidDown = document.getElementById("btnMoveMidDown");
       const midForm = document.getElementById("midForm");
       const midThemeId = document.getElementById("midThemeId");
       const midId = document.getElementById("midId");
@@ -909,7 +958,7 @@
 
           const activeHtml =
             activeTodos.length === 0
-              ? `<p class="text-xs text-slate-400">マイルストーンなし</p>`
+              ? `<p class="text-xs text-slate-400">アクションなし</p>`
               : activeTodos
                   .map((m) => {
                     const progress = clamp(
@@ -918,7 +967,9 @@
                       100
                     );
                     return `
-                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-2" data-role="midtodo-card" data-theme-id="${theme.id}" data-mid-id="${m.id}">
+                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-2" data-role="midtodo-card" data-theme-id="${
+                        theme.id
+                      }" data-mid-id="${m.id}">
                         <div class="flex items-start justify-between gap-2">
                           <button
                             data-action="open-midtodo"
@@ -1047,7 +1098,9 @@
 
             <div class="mt-4">
               <p class="text-xs font-semibold text-slate-500">アクション</p>
-              <div class="mt-2 grid gap-2" data-role="midtodo-list" data-theme-id="${theme.id}">
+              <div class="mt-2 grid gap-2" data-role="midtodo-list" data-theme-id="${
+                theme.id
+              }">
                 ${activeHtml}
               </div>
               <div class="mt-3 flex items-center gap-2">
@@ -1056,14 +1109,14 @@
                   data-theme-id="${theme.id}"
                   type="text"
                   class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-slate-400"
-                  placeholder="マイルストーンを追加"
+                  placeholder="アクションを追加"
                   maxlength="120"
                 />
                 <button
                   data-action="add-midtodo"
                   data-id="${theme.id}"
                   class="rounded-xl bg-gradient-to-r from-emerald-400 to-sky-400 px-3 py-2 text-xs font-medium text-white shadow-sm hover:from-emerald-500 hover:to-sky-500 active:from-emerald-600 active:to-sky-600"
-                  aria-label="マイルストーンを追加"
+                  aria-label="アクションを追加"
                 >
                   ＋
                 </button>
@@ -1093,12 +1146,34 @@
         }
       }
 
-      const DRAG_HOLD_MS = 380;
+      const DRAG_HOLD_MS = 360;
       const DRAG_MOVE_TOLERANCE = 6;
       let dragTimer = null;
       let dragCandidate = null;
       let dragState = null;
       let dragJustEnded = false;
+
+      function startMidtodoDrag(card, pointerId) {
+        const themeId = card.getAttribute("data-theme-id");
+        const listEl = card.closest('[data-role="midtodo-list"]');
+        if (!themeId || !listEl) return;
+        dragState = {
+          card,
+          themeId,
+          listEl,
+          pointerId,
+          lastY: null,
+        };
+        card.classList.add("dragging-item");
+        document.body.classList.add("drag-mode");
+        if (typeof pointerId === "number") {
+          try {
+            card.setPointerCapture(pointerId);
+          } catch {
+            // ignore capture errors
+          }
+        }
+      }
 
       function clearDragTimer() {
         if (dragTimer) {
@@ -1107,89 +1182,39 @@
         }
       }
 
-      function isInteractiveTarget(target) {
-        const button = target.closest("button");
-        if (button) {
-          const action = button.getAttribute("data-action");
-          if (action === "open-midtodo") return false;
-          return true;
-        }
-        return Boolean(target.closest("input, textarea, select, label"));
-      }
-
-      function startDrag() {
-        if (!dragCandidate) return;
-        const { card, type, themeId, pointerId } = dragCandidate;
-        const listEl =
-          type === "theme"
-            ? elThemeList
-            : card.closest('[data-role="midtodo-list"]');
-        if (!listEl) {
-          dragCandidate = null;
-          return;
-        }
-        dragState = {
-          card,
-          type,
-          themeId,
-          listEl,
-          pointerId,
-        };
-        dragCandidate = null;
-        card.classList.add("dragging-item");
-        document.body.classList.add("drag-mode");
-        try {
-          card.setPointerCapture(pointerId);
-        } catch {
-          // ignore capture errors
-        }
-      }
-
       function finishDrag() {
         if (!dragState) return;
-        const { card, type, themeId, listEl, pointerId } = dragState;
+        const { card, themeId, listEl, pointerId } = dragState;
         card.classList.remove("dragging-item");
         document.body.classList.remove("drag-mode");
-        try {
-          card.releasePointerCapture(pointerId);
-        } catch {
-          // ignore release errors
-        }
-        if (type === "theme") {
-          const ids = [...listEl.querySelectorAll('[data-role="theme-card"]')]
-            .map((el) => el.getAttribute("data-theme-id"))
-            .filter(Boolean);
-          const all = loadThemes();
-          const map = new Map(all.map((t) => [t.id, t]));
-          const idSet = new Set(ids);
-          const ordered = ids.map((id) => map.get(id)).filter(Boolean);
-          const remaining = all.filter((t) => !idSet.has(t.id));
-          saveThemes([...ordered, ...remaining]);
-        } else if (type === "midtodo" && themeId) {
-          const list = elThemeList.querySelector(
-            `[data-role="midtodo-list"][data-theme-id="${themeId}"]`
-          );
-          const all = loadThemes();
-          const theme = all.find((t) => t.id === themeId);
-          if (list && theme) {
-            const activeIds = [
-              ...list.querySelectorAll('[data-role="midtodo-card"]'),
-            ]
-              .map((el) => el.getAttribute("data-mid-id"))
-              .filter(Boolean);
-            const activeMap = new Map(
-              theme.midTodos
-                .filter((m) => !m.archivedAt)
-                .map((m) => [m.id, m])
-            );
-            const reorderedActive = activeIds
-              .map((id) => activeMap.get(id))
-              .filter(Boolean);
-            const archived = theme.midTodos.filter((m) => m.archivedAt);
-            theme.midTodos = [...reorderedActive, ...archived];
-            theme.updatedAt = new Date().toISOString();
-            saveThemes(all);
+        if (typeof pointerId === "number") {
+          try {
+            card.releasePointerCapture(pointerId);
+          } catch {
+            // ignore release errors
           }
+        }
+        const list = elThemeList.querySelector(
+          `[data-role="midtodo-list"][data-theme-id="${themeId}"]`
+        );
+        const all = loadThemes();
+        const theme = all.find((t) => t.id === themeId);
+        if (list && theme) {
+          const activeIds = [
+            ...list.querySelectorAll('[data-role="midtodo-card"]'),
+          ]
+            .map((el) => el.getAttribute("data-mid-id"))
+            .filter(Boolean);
+          const activeMap = new Map(
+            theme.midTodos.filter((m) => !m.archivedAt).map((m) => [m.id, m])
+          );
+          const reorderedActive = activeIds
+            .map((id) => activeMap.get(id))
+            .filter(Boolean);
+          const archived = theme.midTodos.filter((m) => m.archivedAt);
+          theme.midTodos = [...reorderedActive, ...archived];
+          theme.updatedAt = new Date().toISOString();
+          saveThemes(all);
         }
         dragState = null;
         dragJustEnded = true;
@@ -1197,11 +1222,6 @@
           dragJustEnded = false;
         }, 200);
         renderThemes();
-      }
-
-      function cancelPendingDrag() {
-        dragCandidate = null;
-        clearDragTimer();
       }
 
       function escapeHtml(s) {
@@ -1324,12 +1344,35 @@
         saveThemes(all);
       }
 
+      function moveTheme(id, direction) {
+        const all = loadThemes();
+        const index = all.findIndex((t) => t.id === id);
+        const nextIndex = index + direction;
+        if (index < 0 || nextIndex < 0 || nextIndex >= all.length) return;
+        const temp = all[index];
+        all[index] = all[nextIndex];
+        all[nextIndex] = temp;
+        saveThemes(all);
+      }
+
+      function updateThemeMoveButtons(themeIdValue) {
+        const all = loadThemes();
+        const index = all.findIndex((t) => t.id === themeIdValue);
+        const canMove = index >= 0;
+        btnMoveThemeUp.classList.toggle("hidden", !canMove);
+        btnMoveThemeDown.classList.toggle("hidden", !canMove);
+        btnMoveThemeUp.disabled = !canMove || index === 0;
+        btnMoveThemeDown.disabled = !canMove || index === all.length - 1;
+      }
+
       function openThemeModal(mode, theme) {
         themeBackdrop.classList.remove("hidden");
         document.body.classList.add("overflow-hidden");
 
         if (mode === "create") {
           themeModalTitle.textContent = "プロジェクト追加";
+          btnMoveThemeUp.classList.add("hidden");
+          btnMoveThemeDown.classList.add("hidden");
           btnArchiveTheme.classList.add("hidden");
           btnDeleteTheme.classList.add("hidden");
           themeId.value = "";
@@ -1340,6 +1383,7 @@
         }
 
         themeModalTitle.textContent = "プロジェクト編集";
+        updateThemeMoveButtons(theme.id);
         btnArchiveTheme.classList.remove("hidden");
         btnDeleteTheme.classList.remove("hidden");
         themeId.value = theme.id;
@@ -1362,6 +1406,7 @@
         midThemeId.value = theme.id;
         midId.value = mid.id;
         midText.value = mid.text;
+        updateMidMoveButtons(theme.id, mid.id);
         midText.focus();
       }
 
@@ -1404,7 +1449,7 @@
         monthModalBody.innerHTML =
           items.length > 0
             ? items.join("")
-            : '<p class="text-xs text-slate-400">マイルストーンなし</p>';
+            : '<p class="text-xs text-slate-400">アクションなし</p>';
         monthBackdrop.classList.remove("hidden");
         document.body.classList.add("overflow-hidden");
       }
@@ -1435,6 +1480,31 @@
         mid.archivedAt = new Date().toISOString();
         theme.updatedAt = new Date().toISOString();
         upsertTheme(theme);
+      }
+
+      function moveMidTodo(themeIdValue, midId, direction) {
+        const theme = findTheme(themeIdValue);
+        if (!theme) return;
+        const active = theme.midTodos.filter((m) => !m.archivedAt);
+        const index = active.findIndex((m) => m.id === midId);
+        const nextIndex = index + direction;
+        if (index < 0 || nextIndex < 0 || nextIndex >= active.length) return;
+        const temp = active[index];
+        active[index] = active[nextIndex];
+        active[nextIndex] = temp;
+        const archived = theme.midTodos.filter((m) => m.archivedAt);
+        theme.midTodos = [...active, ...archived];
+        theme.updatedAt = new Date().toISOString();
+        upsertTheme(theme);
+      }
+
+      function updateMidMoveButtons(themeIdValue, midIdValue) {
+        const theme = findTheme(themeIdValue);
+        const active = theme?.midTodos.filter((m) => !m.archivedAt) || [];
+        const index = active.findIndex((m) => m.id === midIdValue);
+        btnMoveMidUp.disabled = index <= 0;
+        btnMoveMidDown.disabled =
+          index < 0 || index >= active.length - 1;
       }
 
       function deleteMidTodo(themeIdValue, midId) {
@@ -1535,9 +1605,7 @@
       btnCloseModal.addEventListener("click", closeModal);
       btnCancel.addEventListener("click", closeModal);
       btnCloseThemeModal.addEventListener("click", closeThemeModal);
-      btnCancelTheme.addEventListener("click", closeThemeModal);
       btnCloseMidModal.addEventListener("click", closeMidModal);
-      btnCancelMid.addEventListener("click", closeMidModal);
       btnCloseMonthModal.addEventListener("click", closeMonthModal);
       btnKeepMonth.addEventListener("click", () => {
         const stored = localStorage.getItem(ACTIVE_MONTH_KEY);
@@ -1652,6 +1720,22 @@
         render();
       });
 
+      btnMoveThemeUp.addEventListener("click", () => {
+        const id = themeId.value;
+        if (!id) return;
+        moveTheme(id, -1);
+        renderThemes();
+        updateThemeMoveButtons(id);
+      });
+
+      btnMoveThemeDown.addEventListener("click", () => {
+        const id = themeId.value;
+        if (!id) return;
+        moveTheme(id, 1);
+        renderThemes();
+        updateThemeMoveButtons(id);
+      });
+
       btnDeleteTheme.addEventListener("click", () => {
         const id = themeId.value;
         if (!id) return;
@@ -1713,11 +1797,29 @@
         const themeIdValue = midThemeId.value;
         const midIdValue = midId.value;
         if (!themeIdValue || !midIdValue) return;
-        if (confirm("このマイルストーンを削除しますか？")) {
+        if (confirm("このアクションを削除しますか？")) {
           deleteMidTodo(themeIdValue, midIdValue);
           closeMidModal();
           renderThemes();
         }
+      });
+
+      btnMoveMidUp.addEventListener("click", () => {
+        const themeIdValue = midThemeId.value;
+        const midIdValue = midId.value;
+        if (!themeIdValue || !midIdValue) return;
+        moveMidTodo(themeIdValue, midIdValue, -1);
+        renderThemes();
+        updateMidMoveButtons(themeIdValue, midIdValue);
+      });
+
+      btnMoveMidDown.addEventListener("click", () => {
+        const themeIdValue = midThemeId.value;
+        const midIdValue = midId.value;
+        if (!themeIdValue || !midIdValue) return;
+        moveMidTodo(themeIdValue, midIdValue, 1);
+        renderThemes();
+        updateMidMoveButtons(themeIdValue, midIdValue);
       });
 
       midForm.addEventListener("submit", (e) => {
@@ -1865,48 +1967,46 @@
       elThemeList.addEventListener("pointerdown", (e) => {
         if (currentTab !== "themes") return;
         if (e.button && e.button !== 0) return;
-        if (isInteractiveTarget(e.target)) return;
-        const midCard = e.target.closest('[data-role="midtodo-card"]');
-        const themeCard = e.target.closest('[data-role="theme-card"]');
-        const card = midCard || themeCard;
+        const card = e.target.closest('[data-role="midtodo-card"]');
         if (!card) return;
-        const type = midCard ? "midtodo" : "theme";
-        const themeId = card.getAttribute("data-theme-id");
+        const ignored = e.target.closest(
+          'input, textarea, select, label, button[data-action="increment-midtodo"], button[data-action="decrement-midtodo"]'
+        );
+        if (ignored) return;
         dragCandidate = {
           card,
-          type,
-          themeId,
-          pointerId: e.pointerId,
           startX: e.clientX,
           startY: e.clientY,
+          pointerId: e.pointerId,
         };
+        e.preventDefault();
         clearDragTimer();
-        dragTimer = setTimeout(() => startDrag(), DRAG_HOLD_MS);
+        dragTimer = setTimeout(() => {
+          if (!dragCandidate || dragState) return;
+          startMidtodoDrag(dragCandidate.card, dragCandidate.pointerId);
+          dragCandidate = null;
+        }, DRAG_HOLD_MS);
       });
 
       document.addEventListener(
         "pointermove",
         (e) => {
           if (dragState) {
-            const selector =
-              dragState.type === "theme"
-                ? '[data-role="theme-card"]'
-                : '[data-role="midtodo-card"]';
-            const target = document.elementFromPoint(e.clientX, e.clientY);
-            const overCard = target?.closest(selector);
-            if (
-              overCard &&
-              overCard !== dragState.card &&
-              (!dragState.themeId ||
-                overCard.getAttribute("data-theme-id") === dragState.themeId)
-            ) {
-              const rect = overCard.getBoundingClientRect();
-              const insertBefore = e.clientY < rect.top + rect.height / 2;
-              dragState.listEl.insertBefore(
-                dragState.card,
-                insertBefore ? overCard : overCard.nextSibling
-              );
-            }
+            const cards = [
+              ...dragState.listEl.querySelectorAll(
+                '[data-role="midtodo-card"]'
+              ),
+            ].filter((el) => el !== dragState.card);
+            if (cards.length === 0) return;
+            const movingUp =
+              dragState.lastY !== null ? e.clientY < dragState.lastY : false;
+            dragState.lastY = e.clientY;
+            const threshold = movingUp ? 0.75 : 0.25;
+            const next = cards.find((el) => {
+              const rect = el.getBoundingClientRect();
+              return e.clientY < rect.top + rect.height * threshold;
+            });
+            dragState.listEl.insertBefore(dragState.card, next || null);
             e.preventDefault();
             return;
           }
@@ -1914,8 +2014,12 @@
           const dx = Math.abs(e.clientX - dragCandidate.startX);
           const dy = Math.abs(e.clientY - dragCandidate.startY);
           if (dx > DRAG_MOVE_TOLERANCE || dy > DRAG_MOVE_TOLERANCE) {
-            cancelPendingDrag();
+            clearDragTimer();
+            startMidtodoDrag(dragCandidate.card, dragCandidate.pointerId);
+            dragCandidate = null;
+            e.preventDefault();
           }
+          return;
         },
         { passive: false }
       );
@@ -1925,7 +2029,8 @@
           finishDrag();
           return;
         }
-        cancelPendingDrag();
+        clearDragTimer();
+        dragCandidate = null;
       });
 
       document.addEventListener("pointercancel", () => {
@@ -1933,8 +2038,33 @@
           finishDrag();
           return;
         }
-        cancelPendingDrag();
+        clearDragTimer();
+        dragCandidate = null;
       });
+
+      elThemeList.addEventListener("contextmenu", (e) => {
+        const card = e.target.closest('[data-role="midtodo-card"]');
+        if (!card) return;
+        e.preventDefault();
+      });
+
+      document.addEventListener(
+        "wheel",
+        (e) => {
+          if (!dragState) return;
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+
+      document.addEventListener(
+        "touchmove",
+        (e) => {
+          if (!dragState) return;
+          e.preventDefault();
+        },
+        { passive: false }
+      );
 
       // Initial render
       if (!localStorage.getItem("bokabikun.updatedAt")) {
