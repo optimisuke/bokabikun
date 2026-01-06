@@ -1249,7 +1249,7 @@
       }
 
       const DRAG_HOLD_MS = 360;
-      const DRAG_MOVE_TOLERANCE = 6;
+      const DRAG_HOLD_TOLERANCE = 2;
       let dragTimer = null;
       let dragCandidate = null;
       let dragState = null;
@@ -1275,6 +1275,11 @@
             // ignore capture errors
           }
         }
+      }
+
+      function cancelDragCandidate() {
+        clearDragTimer();
+        dragCandidate = null;
       }
 
       function clearDragTimer() {
@@ -2175,6 +2180,7 @@
       elThemeList.addEventListener("pointerdown", (e) => {
         if (currentTab !== "themes") return;
         if (e.button && e.button !== 0) return;
+        if (e.pointerType === "mouse") return;
         const card = e.target.closest('[data-role="midtodo-card"]');
         if (!card) return;
         const ignored = e.target.closest(
@@ -2221,11 +2227,8 @@
           if (!dragCandidate) return;
           const dx = Math.abs(e.clientX - dragCandidate.startX);
           const dy = Math.abs(e.clientY - dragCandidate.startY);
-          if (dx > DRAG_MOVE_TOLERANCE || dy > DRAG_MOVE_TOLERANCE) {
-            clearDragTimer();
-            startMidtodoDrag(dragCandidate.card, dragCandidate.pointerId);
-            dragCandidate = null;
-            e.preventDefault();
+          if (dx > DRAG_HOLD_TOLERANCE || dy > DRAG_HOLD_TOLERANCE) {
+            cancelDragCandidate();
           }
           return;
         },
@@ -2237,8 +2240,7 @@
           finishDrag();
           return;
         }
-        clearDragTimer();
-        dragCandidate = null;
+        cancelDragCandidate();
       });
 
       document.addEventListener("pointercancel", () => {
@@ -2246,8 +2248,7 @@
           finishDrag();
           return;
         }
-        clearDragTimer();
-        dragCandidate = null;
+        cancelDragCandidate();
       });
 
       elThemeList.addEventListener("contextmenu", (e) => {

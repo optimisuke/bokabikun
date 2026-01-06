@@ -1,4 +1,4 @@
-const CACHE_NAME = "bokabikun-v1.1.3";
+const CACHE_NAME = "bokabikun-v1.1.4";
 const PRECACHE_URLS = [
   "./",
   "./index.html",
