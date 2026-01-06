@@ -56,6 +56,14 @@
           transform: scale(1);
         }
       }
+      body.drag-mode {
+        user-select: none;
+        cursor: grabbing;
+      }
+      .dragging-item {
+        opacity: 0.6;
+        transform: scale(0.98);
+      }
     </style>
   </head>
 
@@ -896,6 +904,8 @@
           const card = document.createElement("div");
           card.className =
             "rounded-2xl border border-slate-200 bg-white p-4 shadow-sm";
+          card.dataset.role = "theme-card";
+          card.dataset.themeId = theme.id;
 
           const activeHtml =
             activeTodos.length === 0
@@ -908,7 +918,7 @@
                       100
                     );
                     return `
-                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-2">
+                      <div class="rounded-xl border border-slate-200 bg-slate-50 p-2" data-role="midtodo-card" data-theme-id="${theme.id}" data-mid-id="${m.id}">
                         <div class="flex items-start justify-between gap-2">
                           <button
                             data-action="open-midtodo"
@@ -1037,7 +1047,7 @@
 
             <div class="mt-4">
               <p class="text-xs font-semibold text-slate-500">アクション</p>
-              <div class="mt-2 grid gap-2">
+              <div class="mt-2 grid gap-2" data-role="midtodo-list" data-theme-id="${theme.id}">
                 ${activeHtml}
               </div>
               <div class="mt-3 flex items-center gap-2">
@@ -1081,6 +1091,117 @@
 
           elThemeList.appendChild(card);
         }
+      }
+
+      const DRAG_HOLD_MS = 380;
+      const DRAG_MOVE_TOLERANCE = 6;
+      let dragTimer = null;
+      let dragCandidate = null;
+      let dragState = null;
+      let dragJustEnded = false;
+
+      function clearDragTimer() {
+        if (dragTimer) {
+          clearTimeout(dragTimer);
+          dragTimer = null;
+        }
+      }
+
+      function isInteractiveTarget(target) {
+        const button = target.closest("button");
+        if (button) {
+          const action = button.getAttribute("data-action");
+          if (action === "open-midtodo") return false;
+          return true;
+        }
+        return Boolean(target.closest("input, textarea, select, label"));
+      }
+
+      function startDrag() {
+        if (!dragCandidate) return;
+        const { card, type, themeId, pointerId } = dragCandidate;
+        const listEl =
+          type === "theme"
+            ? elThemeList
+            : card.closest('[data-role="midtodo-list"]');
+        if (!listEl) {
+          dragCandidate = null;
+          return;
+        }
+        dragState = {
+          card,
+          type,
+          themeId,
+          listEl,
+          pointerId,
+        };
+        dragCandidate = null;
+        card.classList.add("dragging-item");
+        document.body.classList.add("drag-mode");
+        try {
+          card.setPointerCapture(pointerId);
+        } catch {
+          // ignore capture errors
+        }
+      }
+
+      function finishDrag() {
+        if (!dragState) return;
+        const { card, type, themeId, listEl, pointerId } = dragState;
+        card.classList.remove("dragging-item");
+        document.body.classList.remove("drag-mode");
+        try {
+          card.releasePointerCapture(pointerId);
+        } catch {
+          // ignore release errors
+        }
+        if (type === "theme") {
+          const ids = [...listEl.querySelectorAll('[data-role="theme-card"]')]
+            .map((el) => el.getAttribute("data-theme-id"))
+            .filter(Boolean);
+          const all = loadThemes();
+          const map = new Map(all.map((t) => [t.id, t]));
+          const idSet = new Set(ids);
+          const ordered = ids.map((id) => map.get(id)).filter(Boolean);
+          const remaining = all.filter((t) => !idSet.has(t.id));
+          saveThemes([...ordered, ...remaining]);
+        } else if (type === "midtodo" && themeId) {
+          const list = elThemeList.querySelector(
+            `[data-role="midtodo-list"][data-theme-id="${themeId}"]`
+          );
+          const all = loadThemes();
+          const theme = all.find((t) => t.id === themeId);
+          if (list && theme) {
+            const activeIds = [
+              ...list.querySelectorAll('[data-role="midtodo-card"]'),
+            ]
+              .map((el) => el.getAttribute("data-mid-id"))
+              .filter(Boolean);
+            const activeMap = new Map(
+              theme.midTodos
+                .filter((m) => !m.archivedAt)
+                .map((m) => [m.id, m])
+            );
+            const reorderedActive = activeIds
+              .map((id) => activeMap.get(id))
+              .filter(Boolean);
+            const archived = theme.midTodos.filter((m) => m.archivedAt);
+            theme.midTodos = [...reorderedActive, ...archived];
+            theme.updatedAt = new Date().toISOString();
+            saveThemes(all);
+          }
+        }
+        dragState = null;
+        dragJustEnded = true;
+        setTimeout(() => {
+          dragJustEnded = false;
+        }, 200);
+        renderThemes();
+      }
+
+      function cancelPendingDrag() {
+        dragCandidate = null;
+        clearDragTimer();
       }
 
       function escapeHtml(s) {
@@ -1645,6 +1766,7 @@
       });
 
       elThemeList.addEventListener("click", (e) => {
+        if (dragJustEnded) return;
         const btn = e.target.closest("button");
         const action = btn?.getAttribute("data-action");
         const editableCard = e.target.closest('[data-action="edit-theme"]');
@@ -1738,6 +1860,80 @@
         addMidTodo(id, text);
         input.value = "";
         renderThemes();
+      });
+
+      elThemeList.addEventListener("pointerdown", (e) => {
+        if (currentTab !== "themes") return;
+        if (e.button && e.button !== 0) return;
+        if (isInteractiveTarget(e.target)) return;
+        const midCard = e.target.closest('[data-role="midtodo-card"]');
+        const themeCard = e.target.closest('[data-role="theme-card"]');
+        const card = midCard || themeCard;
+        if (!card) return;
+        const type = midCard ? "midtodo" : "theme";
+        const themeId = card.getAttribute("data-theme-id");
+        dragCandidate = {
+          card,
+          type,
+          themeId,
+          pointerId: e.pointerId,
+          startX: e.clientX,
+          startY: e.clientY,
+        };
+        clearDragTimer();
+        dragTimer = setTimeout(() => startDrag(), DRAG_HOLD_MS);
+      });
+
+      document.addEventListener(
+        "pointermove",
+        (e) => {
+          if (dragState) {
+            const selector =
+              dragState.type === "theme"
+                ? '[data-role="theme-card"]'
+                : '[data-role="midtodo-card"]';
+            const target = document.elementFromPoint(e.clientX, e.clientY);
+            const overCard = target?.closest(selector);
+            if (
+              overCard &&
+              overCard !== dragState.card &&
+              (!dragState.themeId ||
+                overCard.getAttribute("data-theme-id") === dragState.themeId)
+            ) {
+              const rect = overCard.getBoundingClientRect();
+              const insertBefore = e.clientY < rect.top + rect.height / 2;
+              dragState.listEl.insertBefore(
+                dragState.card,
+                insertBefore ? overCard : overCard.nextSibling
+              );
+            }
+            e.preventDefault();
+            return;
+          }
+          if (!dragCandidate) return;
+          const dx = Math.abs(e.clientX - dragCandidate.startX);
+          const dy = Math.abs(e.clientY - dragCandidate.startY);
+          if (dx > DRAG_MOVE_TOLERANCE || dy > DRAG_MOVE_TOLERANCE) {
+            cancelPendingDrag();
+          }
+        },
+        { passive: false }
+      );
+
+      document.addEventListener("pointerup", () => {
+        if (dragState) {
+          finishDrag();
+          return;
+        }
+        cancelPendingDrag();
+      });
+
+      document.addEventListener("pointercancel", () => {
+        if (dragState) {
+          finishDrag();
+          return;
+        }
+        cancelPendingDrag();
       });
 
       // Initial render
